@@ -19,6 +19,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,10 +40,10 @@ class VetController {
 
 	@GetMapping("/vets.html")
 	public String showVetList(Map<String, Object> model) {
-		// Here we are returning an object of type 'Vets' rather than a collection of Vet
-		// objects so it is simpler for Object-Xml mapping
+	
 		Vets vets = new Vets();
-		vets.getVetList().addAll(this.vets.findAll());
+		  vets.getVetList().addAll(this.vets.findAll()); 
+		 //List<Vet> vets = new ArrayList<>(); // 🐞 Injected Fault 3: Return empty list
 		model.put("vets", vets);
 		return "vets/vetList";
 	}

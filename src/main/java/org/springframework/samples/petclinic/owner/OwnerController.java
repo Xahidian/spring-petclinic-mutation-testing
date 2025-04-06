@@ -15,6 +15,7 @@
  */
 package org.springframework.samples.petclinic.owner;
 
+import org.springframework.samples.petclinic.visit.Visit;
 import org.springframework.samples.petclinic.visit.VisitRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,8 +28,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
+
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.List;
 
 /**
  * @author Juergen Hoeller
@@ -68,8 +73,9 @@ class OwnerController {
 			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 		}
 		else {
-			this.owners.save(owner);
+			this.owners.save(owner); // Fault #6 injected: owner not persisted
 			return "redirect:/owners/" + owner.getId();
+			//return "redirect:/owners"; // or even: return "redirect:/owners/9999";
 		}
 	}
 
@@ -88,7 +94,11 @@ class OwnerController {
 		}
 
 		// find owners by last name
-		Collection<Owner> results = this.owners.findByLastName(owner.getLastName());
+		  Collection<Owner> results = this.owners.findByLastName(owner.getLastName());
+		// Collection<Owner> results = Collections.emptyList(); // 🔥 Fault #7 injected
+  // Fault #9: Injected — manually fetch and shuffle results
+   // Fault #9: List<Owner> results = new ArrayList<>(this.owners.findByLastName(owner.getLastName()));
+   // Fault #9:  Collections.shuffle(results); // <-- FAULT: random order returned
 		if (results.isEmpty()) {
 			// no owners found
 			result.rejectValue("lastName", "notFound", "not found");
@@ -108,7 +118,12 @@ class OwnerController {
 
 	@GetMapping("/owners/{ownerId}/edit")
 	public String initUpdateOwnerForm(@PathVariable("ownerId") int ownerId, Model model) {
-		Owner owner = this.owners.findById(ownerId);
+		// Original
+Owner owner = this.owners.findById(ownerId);
+
+// Injected mutation Fault 1 
+  // Owner owner = null; // Simulating data not fetched from DB fault 1 
+
 		model.addAttribute(owner);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 	}
@@ -135,8 +150,11 @@ class OwnerController {
 	public ModelAndView showOwner(@PathVariable("ownerId") int ownerId) {
 		ModelAndView mav = new ModelAndView("owners/ownerDetails");
 		Owner owner = this.owners.findById(ownerId);
+		//Owner owner = null; // ✅ Fault #5 injected
+
 		for (Pet pet : owner.getPets()) {
-			pet.setVisitsInternal(visits.findByPetId(pet.getId()));
+		pet.setVisitsInternal(visits.findByPetId(pet.getId()));
+		
 		}
 		mav.addObject(owner);
 		return mav;

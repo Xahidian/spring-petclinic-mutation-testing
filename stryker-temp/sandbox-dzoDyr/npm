@@ -1,0 +1,5 @@
+      PID    PPID    PGID     WINPID   TTY         UID    STIME COMMAND
+     1440       1    1440      11456  cons0     197609 19:44:59 /usr/bin/bash
+     1512       1    1500      17236  cons0     197609 19:45:32 /c/Program Files/Eclipse Adoptium/jdk-21.0.6.7-hotspot/bin/java
+     1550       1    1550       1308  cons1     197609 22:26:48 /usr/bin/bash
+     1599    1550    1599      11564  cons1     197609 22:26:52 /usr/bin/PS

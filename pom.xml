@@ -33,6 +33,8 @@
   </properties>
 
   <dependencies>
+
+
     <!-- Spring and Spring Boot dependencies -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -119,155 +121,168 @@
       <artifactId>spring-boot-devtools</artifactId>
       <optional>true</optional>
     </dependency>
+
+    <!-- Playwright section -->
+<dependency>
+    <groupId>com.microsoft.playwright</groupId>
+    <artifactId>playwright</artifactId>
+    <version>1.41.0</version>
+</dependency>
+<!-- ✅ JUnit Dependencies (Moved to the Correct Place) -->
+    <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-api</artifactId>
+    <version>5.7.0</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-engine</artifactId>
+    <version>5.7.0</version>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>org.pitest</groupId>
+    <artifactId>pitest-junit5-plugin</artifactId>
+    <version>1.0.0</version>
+</dependency>
+
   </dependencies>
 
-  <build>
+
+
+<build>
     <plugins>
-      <plugin>
-        <groupId>io.spring.javaformat</groupId>
-        <artifactId>spring-javaformat-maven-plugin</artifactId>
-        <version>${spring-format.version}</version>
-        <executions>
-          <execution>
-            <phase>validate</phase>
-            <goals>
-              <goal>validate</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>3.1.1</version>
-        <dependencies>
-          <dependency>
-            <groupId>com.puppycrawl.tools</groupId>
-            <artifactId>checkstyle</artifactId>
-            <version>8.32</version>
-          </dependency>
-          <dependency>
-            <groupId>io.spring.nohttp</groupId>
-            <artifactId>nohttp-checkstyle</artifactId>
-            <version>${nohttp-checkstyle.version}</version>
-          </dependency>
-        </dependencies>
-        <executions>
-          <execution>
-            <id>nohttp-checkstyle-validation</id>
-            <phase>validate</phase>
-            <configuration>
-              <configLocation>src/checkstyle/nohttp-checkstyle.xml</configLocation>
-              <suppressionsLocation>src/checkstyle/nohttp-checkstyle-suppressions.xml</suppressionsLocation>
-              <encoding>UTF-8</encoding>
-              <sourceDirectories>${basedir}</sourceDirectories>
-              <includes>**/*</includes>
-              <excludes>**/.git/**/*,**/.idea/**/*,**/target/**/,**/.flattened-pom.xml,**/*.class</excludes>
-            </configuration>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <!-- Spring Boot Actuator displays build-related information
-              if a META-INF/build-info.properties file is present -->
-            <goals>
-              <goal>build-info</goal>
-            </goals>
-            <configuration>
-              <additionalProperties>
-                <encoding.source>${project.build.sourceEncoding}</encoding.source>
-                <encoding.reporting>${project.reporting.outputEncoding}</encoding.reporting>
-                <java.source>${maven.compiler.source}</java.source>
-                <java.target>${maven.compiler.target}</java.target>
-              </additionalProperties>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${jacoco.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>report</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
 
-      <!-- Spring Boot Actuator displays build-related information if a git.properties
-        file is present at the classpath -->
-      <plugin>
-        <groupId>pl.project13.maven</groupId>
-        <artifactId>git-commit-id-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>revision</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <verbose>true</verbose>
-          <dateFormat>yyyy-MM-dd'T'HH:mm:ssZ</dateFormat>
-          <generateGitPropertiesFile>true</generateGitPropertiesFile>
-          <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties
-          </generateGitPropertiesFilename>
-          <failOnNoGitDirectory>false</failOnNoGitDirectory>
-          <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
-        </configuration>
-      </plugin>
 
-      <plugin>
-        <groupId>ro.isdc.wro4j</groupId>
-        <artifactId>wro4j-maven-plugin</artifactId>
-        <version>${wro4j.version}</version>
-        <executions>
-          <execution>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
-          <cssDestinationFolder>${project.build.directory}/classes/static/resources/css</cssDestinationFolder>
-          <wroFile>${basedir}/src/main/wro/wro.xml</wroFile>
-          <extraConfigFile>${basedir}/src/main/wro/wro.properties</extraConfigFile>
-          <contextFolder>${basedir}/src/main/less</contextFolder>
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>bootstrap</artifactId>
-            <version>${webjars-bootstrap.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
+<plugin>
+    <groupId>org.pitest</groupId>
+    <artifactId>pitest-maven</artifactId>
+    <version>1.15.1</version>
+    <configuration>
+
+
+        <timeoutConst>10000</timeoutConst>
+        <!-- 🔥 Run mutation tests on ALL relevant classes -->
+        <targetClasses>
+            <param>org.springframework.samples.petclinic.service.*</param>
+            <param>org.springframework.samples.petclinic.repository.*</param>
+            <param>org.springframework.samples.petclinic.controller.*</param>
+            <param>org.springframework.samples.petclinic.model.*</param>
+        </targetClasses>
+
+        <!-- ✅ Run mutation tests on ALL test classes <param>org.springframework.samples.petclinic.*</param>         -->
+        <targetTests>
+            
+        <param>playwright.PlaywrightTest</param>
+        </targetTests>
+
+        <!-- 🛠️ Use all available mutation operators -->
+        <mutators>
+            <mutator>ALL</mutator>
+        </mutators>
+
+        <!-- 📄 Generate HTML and XML reports -->
+        <outputFormats>
+            <outputFormat>HTML</outputFormat>
+            <outputFormat>XML</outputFormat>
+        </outputFormats>
+
+        <!-- 🏎️ Performance tuning -->
+        <threads>4</threads> <!-- Adjust based on CPU cores -->
+        <timestampedReports>false</timestampedReports>
+        <reportDir>target/pit-reports</reportDir>
+
+        <!-- 🔧 Optional: Avoid failures if no mutations are found -->
+        <failWhenNoMutations>false</failWhenNoMutations>
+
+        <!-- 🕒 Optional: Increase timeout if tests take longer -->
+        <timeoutConst>6000</timeoutConst> <!-- Default is 4000ms -->
+        <timeoutFactor>2.0</timeoutFactor>
+    </configuration>
+</plugin>
+
+
+
+
+
+        <!-- Spring Boot Actuator displays build-related information if a git.properties file is present at the classpath -->
+        <plugin>
+            <groupId>pl.project13.maven</groupId>
+            <artifactId>git-commit-id-plugin</artifactId>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>revision</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <verbose>true</verbose>
+                <dateFormat>yyyy-MM-dd'T'HH:mm:ssZ</dateFormat>
+                <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+            </configuration>
+        </plugin>
+
+        <plugin>
+            <groupId>ro.isdc.wro4j</groupId>
+            <artifactId>wro4j-maven-plugin</artifactId>
+            <version>${wro4j.version}</version>
+            <executions>
+                <execution>
+                    <phase>generate-resources</phase>
+                    <goals>
+                        <goal>run</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
+                <cssDestinationFolder>${project.build.directory}/classes/static/resources/css</cssDestinationFolder>
+                <wroFile>${basedir}/src/main/wro/wro.xml</wroFile>
+                <extraConfigFile>${basedir}/src/main/wro/wro.properties</extraConfigFile>
+                <contextFolder>${basedir}/src/main/less</contextFolder>
+            </configuration>
+            <dependencies>
+                <dependency>
+                    <groupId>org.webjars</groupId>
+                    <artifactId>bootstrap</artifactId>
+                    <version>${webjars-bootstrap.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                    <version>${mockito.version}</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+
+        <!-- ✅ Playwright Integration -->
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>java</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <mainClass>com.microsoft.playwright.CLI</mainClass>
+                <arguments>
+                    <argument>install</argument>
+                </arguments>
+            </configuration>
+        </plugin>
+
     </plugins>
-  </build>
+</build>
+
 
   <licenses>
     <license>

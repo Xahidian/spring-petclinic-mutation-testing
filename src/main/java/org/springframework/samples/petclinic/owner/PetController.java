@@ -75,9 +75,10 @@ class PetController {
 
 	@PostMapping("/pets/new")
 	public String processCreationForm(Owner owner, @Valid Pet pet, BindingResult result, ModelMap model) {
+
+		// FAULT 10
 		if (StringUtils.hasLength(pet.getName()) && pet.isNew() && owner.getPet(pet.getName(), true) != null) {
-			result.rejectValue("name", "duplicate", "already exists");
-		}
+			result.rejectValue("name", "duplicate", "already exists");}
 		owner.addPet(pet);
 		if (result.hasErrors()) {
 			model.put("pet", pet);
@@ -105,7 +106,8 @@ class PetController {
 		}
 		else {
 			owner.addPet(pet);
-			this.pets.save(pet);
+			this.pets.save(pet);// Fault #8 injected: pet type not persisted
+			 
 			return "redirect:/owners/{ownerId}";
 		}
 	}

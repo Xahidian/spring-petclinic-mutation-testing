@@ -1,0 +1,89 @@
+
+Running 18 tests using 2 workers
+
+[1A[2K[1/18] [chromium] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Verify Spring Boot application is running
+[1A[2K[2/18] [firefox] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Verify Spring Boot application is running
+[1A[2K[chromium] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Verify Spring Boot application is running
+✅ Test Passed: Verify Spring Boot application is running
+
+[1A[2K[3/18] [chromium] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Find Owners page should be accessible
+[1A[2K[chromium] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Find Owners page should be accessible
+✅ Test Passed: Find Owners page should be accessible
+
+[1A[2K[4/18] [chromium] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Veterinarians page should be accessible
+[1A[2K[chromium] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Veterinarians page should be accessible
+✅ Test Passed: Veterinarians page should be accessible
+
+[1A[2K[5/18] [chromium] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Error page should be accessible
+[1A[2K[chromium] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Error page should be accessible
+✅ Test Passed: Error page should be accessible
+
+[1A[2K[6/18] [chromium] › tests\playwright-test.spec.ts:13:9 › Owner Search & Button Verification › Verify "Add Owner" button and form submission
+[1A[2K[chromium] › tests\playwright-test.spec.ts:13:9 › Owner Search & Button Verification › Verify "Add Owner" button and form submission
+Creating owner: John3103 Doe3103
+
+[1A[2KNew Owner ID: 17
+
+[1A[2K✅ Test Passed: Verify "Add Owner" button and form submission
+
+[1A[2K[7/18] [chromium] › tests\playwright-test.spec.ts:13:9 › Owner Management › Edit Owner Details
+[1A[2K[chromium] › tests\playwright-test.spec.ts:13:9 › Owner Management › Edit Owner Details
+✅ Test Passed: Edit Owner Details
+
+[1A[2K[8/18] [chromium] › tests\playwright-test.spec.ts:13:9 › Owner Management › Add a New Pet for an Owner
+[1A[2K[firefox] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Verify Spring Boot application is running
+✅ Test Passed: Verify Spring Boot application is running
+
+[1A[2K[9/18] [firefox] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Find Owners page should be accessible
+[1A[2K[chromium] › tests\playwright-test.spec.ts:13:9 › Owner Management › Add a New Pet for an Owner
+✅ Test Passed: Add a New Pet for an Owner
+
+[1A[2K[10/18] [chromium] › tests\playwright-test.spec.ts:13:9 › Verify Veterinarians Table
+[1A[2K[firefox] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Find Owners page should be accessible
+✅ Test Passed: Find Owners page should be accessible
+
+[1A[2K[11/18] [firefox] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Veterinarians page should be accessible
+[1A[2K[chromium] › tests\playwright-test.spec.ts:13:9 › Verify Veterinarians Table
+✅ Test Passed: Verify Veterinarians Table
+
+[1A[2K[12/18] [chromium] › tests\playwright-test.spec.ts:13:9 › Verify Error Page Content
+[1A[2K[firefox] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Veterinarians page should be accessible
+✅ Test Passed: Veterinarians page should be accessible
+
+[1A[2K[13/18] [firefox] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Error page should be accessible
+[1A[2K[chromium] › tests\playwright-test.spec.ts:13:9 › Verify Error Page Content
+✅ Test Passed: Verify Error Page Content
+
+[1A[2K[firefox] › tests\playwright-test.spec.ts:13:9 › Verify Application and Navigation Links › Error page should be accessible
+✅ Test Passed: Error page should be accessible
+
+[1A[2K[14/18] [firefox] › tests\playwright-test.spec.ts:13:9 › Owner Search & Button Verification › Verify "Add Owner" button and form submission
+[1A[2K[firefox] › tests\playwright-test.spec.ts:13:9 › Owner Search & Button Verification › Verify "Add Owner" button and form submission
+Creating owner: John9292 Doe9292
+
+[1A[2KNew Owner ID: 18
+
+[1A[2K✅ Test Passed: Verify "Add Owner" button and form submission
+
+[1A[2K[15/18] [firefox] › tests\playwright-test.spec.ts:13:9 › Owner Management › Edit Owner Details
+[1A[2K[firefox] › tests\playwright-test.spec.ts:13:9 › Owner Management › Edit Owner Details
+✅ Test Passed: Edit Owner Details
+
+[1A[2K[16/18] [firefox] › tests\playwright-test.spec.ts:13:9 › Owner Management › Add a New Pet for an Owner
+[1A[2K[firefox] › tests\playwright-test.spec.ts:13:9 › Owner Management › Add a New Pet for an Owner
+✅ Test Passed: Add a New Pet for an Owner
+
+[1A[2K[17/18] [firefox] › tests\playwright-test.spec.ts:13:9 › Verify Veterinarians Table
+[1A[2K[firefox] › tests\playwright-test.spec.ts:13:9 › Verify Veterinarians Table
+✅ Test Passed: Verify Veterinarians Table
+
+[1A[2K[18/18] [firefox] › tests\playwright-test.spec.ts:13:9 › Verify Error Page Content
+[1A[2K[firefox] › tests\playwright-test.spec.ts:13:9 › Verify Error Page Content
+✅ Test Passed: Verify Error Page Content
+
+[1A[2K  18 passed (25.1s)
+
+To open last HTML report run:
+[36m[39m
+[36m  npx playwright show-report[39m
+[36m[39m

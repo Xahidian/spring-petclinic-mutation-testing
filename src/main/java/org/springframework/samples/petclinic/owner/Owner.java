@@ -53,10 +53,10 @@ public class Owner extends Person {
 	@Column(name = "city")
 	@NotEmpty
 	private String city;
-
+// Fault 4
 	@Column(name = "telephone")
-	@NotEmpty
-	@Digits(fraction = 0, integer = 10)
+	 @NotEmpty // Injected fault 4
+	 @Digits(fraction = 0, integer = 10) // Injected fault 4
 	private String telephone;
 
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")

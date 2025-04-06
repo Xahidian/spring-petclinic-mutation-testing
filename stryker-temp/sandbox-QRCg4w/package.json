@@ -1,0 +1,15 @@
+{
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@playwright/test": "^1.51.0",
+    "@stryker-mutator/core": "^8.7.1",
+    "@types/node": "^22.13.10",
+    "eslint": "^9.22.0",
+    "globals": "^16.0.0",
+    "typescript-eslint": "^8.26.0"
+  },
+  "scripts": {
+    "start:mutated": "mvn spring-boot:run",
+    "test:mutation": "mvnw.cmd org.pitest:pitest-maven:mutationCoverage && npm run start:mutated & npx playwright test tests/playwright-test.spec.ts > mutation-playwright-results.log 2>&1"
+  }
+}

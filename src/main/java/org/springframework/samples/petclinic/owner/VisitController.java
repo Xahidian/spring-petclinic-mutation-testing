@@ -84,9 +84,11 @@ class VisitController {
 			return "pets/createOrUpdateVisitForm";
 		}
 		else {
-			this.visits.save(visit);
+			System.out.println("🔥 This controller is used!"); //
+			this.visits.save(visit); // Commenting out for injecting fault 2 for my thesis Unit testing and functional testing
 			return "redirect:/owners/{ownerId}";
 		}
 	}
 
 }
+
