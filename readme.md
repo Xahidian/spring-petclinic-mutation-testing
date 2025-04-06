@@ -1,8 +1,10 @@
+# spring-petclinic-mutation-testing
+Experimental version of Spring PetClinic used  to evaluate fault detection using mutation testing and Playwright-based metamorphic testing.
 # 🧪 Spring PetClinic – Mutation & Metamorphic Testing for Thesis
 
 This repository contains a **modified version** of the official [Spring PetClinic](https://github.com/spring-projects/spring-petclinic) application. It was adapted as part of my **Master’s thesis** to evaluate how well **Metamorphic Testing** (using Playwright) compares to traditional testing in detecting injected faults (mutation testing) in a web application.
 
-> 🎓 Author: [Xahidian](https://github.com/Xahidian)  
+> 🎓 Author: [MD Zahid](https://github.com/Xahidian)  
 > 🎓 Program: Master’s in Information Technology  
 > 🏫 University: Åbo Akademi University, Finland  
 > 📘 Thesis Focus: Fault injection, Metamorphic Testing, Playwright automation, Mutation analysis
