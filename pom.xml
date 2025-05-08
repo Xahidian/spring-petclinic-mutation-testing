@@ -152,8 +152,22 @@
 
 
 <build>
-    <plugins>
 
+
+    <plugins>
+        <!-- For MR Test Coverage-->
+<plugin>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-maven-plugin</artifactId>
+  <version>2.4.2</version>
+  <executions>
+    <execution>
+      <goals>
+        <goal>repackage</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
 
 <plugin>
     <groupId>org.pitest</groupId>
@@ -174,7 +188,8 @@
         <!-- ✅ Run mutation tests on ALL test classes <param>org.springframework.samples.petclinic.*</param>         -->
         <targetTests>
             
-        <param>playwright.PlaywrightTest</param>
+        <!-- <param>playwright.PlaywrightTest</param> -->
+        <param>org.springframework.samples.petclinic.*</param> 
         </targetTests>
 
         <!-- 🛠️ Use all available mutation operators -->
@@ -202,6 +217,25 @@
     </configuration>
 </plugin>
 
+<plugin>
+    <groupId>org.jacoco</groupId>
+    <artifactId>jacoco-maven-plugin</artifactId>
+    <version>0.8.11</version> <!-- Latest as of 2025 -->
+    <executions>
+        <execution>
+            <goals>
+                <goal>prepare-agent</goal>
+            </goals>
+        </execution>
+        <execution>
+            <id>report</id>
+            <phase>prepare-package</phase>
+            <goals>
+                <goal>report</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
 
 
 
@@ -260,7 +294,8 @@
             </dependencies>
         </plugin>
 
-        <!-- ✅ Playwright Integration -->
+
+        <!-- Playwright Integration -->
         <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
