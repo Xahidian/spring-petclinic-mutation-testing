@@ -633,19 +633,47 @@ void testPetTypeUpdate() {
     System.out.println(" MR15 Passed: Pet type update reflects correctly.");
 }
 
+
+// @Test
+// void testFindOwnerByPartialName() {
+//     page.navigate(BASE_URL + "/owners/find");
+//     page.fill("[name='lastName']", "D");
+//     page.click("button[type='submit']");
+
+//     assertTrue(page.locator("table tbody tr").count() > 0, "MR16 Failed: At least one owner should be found.");
+//     System.out.println(" MR16 Passed: Searching by partial name returns owners.");
+// }
+
 // MR16: Find Owner by Partial Name - Searching part of an owner's name should return results
 @Test
-void testFindOwnerByPartialName() {
+void mrFindOwnerByPartialNameSubset() {
+    String seedInput = "";       // Empty input (returns all owners)
+    String morphedInput = "D";   // Partial last name
+
+    // Step 1: Search with seed input (empty string)
     page.navigate(BASE_URL + "/owners/find");
-    page.fill("[name='lastName']", "D");
+    page.fill("[name='lastName']", seedInput);
     page.click("button[type='submit']");
 
-    assertTrue(page.locator("table tbody tr").count() > 0, "MR16 Failed: At least one owner should be found.");
-    System.out.println(" MR16 Passed: Searching by partial name returns owners.");
+    List<String> seedResults = page.locator("table tbody tr td a").allTextContents();
+    System.out.println("🔎 Seed (empty input) search results: " + seedResults);
+
+    // Step 2: Search with morphed input (partial name)
+    page.navigate(BASE_URL + "/owners/find");
+    page.fill("[name='lastName']", morphedInput);
+    page.click("button[type='submit']");
+
+    List<String> morphedResults = page.locator("table tbody tr td a").allTextContents();
+    System.out.println("🔎 Morphed (partial input) search results: " + morphedResults);
+
+    // Step 3: Assert metamorphic relation: morphedResults ⊆ seedResults
+    assertTrue(seedResults.containsAll(morphedResults), "❌ MR16 Failed: Partial search results are not a subset of all owners search.");
+
+    System.out.println("✅ MR16 Passed: Partial search results are a subset of all owners.");
 }
 
 
-//  MR17: Visit List Consistency - Visits for a pet should be consistent across reloads
+
 //  MR17: Visit List Consistency - Visits for a pet should be consistent across reloads
 @Test
 void testVisitAdditionDetected() {
