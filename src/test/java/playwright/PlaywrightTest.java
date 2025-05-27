@@ -36,7 +36,7 @@ public class PlaywrightTest {
         playwright.close();
     }
 
-    // ✅ Test: Check Home Page Title
+    //  Test: Check Home Page Title
     @Test
     void testTitle() {
         page.navigate(BASE_URL);
@@ -65,7 +65,7 @@ public class PlaywrightTest {
         page.click("button[type='submit']");
 
         assertTrue(page.url().matches(".*/owners/\\d+"), "Should navigate to the new owner page");
-        System.out.println("✅ Owner created successfully");
+        System.out.println(" Owner created successfully");
 
         // Extract Owner ID from URL
         String[] urlParts = page.url().split("/");
@@ -81,7 +81,7 @@ public class PlaywrightTest {
         page.click("button[type='submit']");
 
         assertEquals(2, page.locator(".has-error").count(), "Should display 2 validation errors");
-        System.out.println("✅ Proper validation messages displayed");
+        System.out.println(" Proper validation messages displayed");
     }
 
     @Test
@@ -92,7 +92,7 @@ public class PlaywrightTest {
 
         assertTrue(page.url().matches(".*/owners.*"), "Should navigate to owners list");
         assertTrue(page.locator("table").isVisible(), "Owners table should be visible");
-        System.out.println("✅ Owners list displayed correctly");
+        System.out.println(" Owners list displayed correctly");
     }
 
     @Test
@@ -104,7 +104,7 @@ public class PlaywrightTest {
         page.click("button[type='submit']");
 
         assertEquals(BASE_URL + "/owners/" + ownerId, page.url(), "Should navigate back to updated owner page");
-        System.out.println("✅ Owner details updated successfully");
+        System.out.println(" Owner details updated successfully");
     }
 
     @Test
@@ -116,7 +116,7 @@ public class PlaywrightTest {
         page.click("button[type='submit']");
 
         assertEquals(2, page.locator(".has-error").count(), "Should display 2 validation errors");
-        System.out.println("✅ Proper validation for update errors");
+        System.out.println(" Proper validation for update errors");
     }
 
     // ===================== Pet Management Tests =====================
@@ -131,7 +131,7 @@ public class PlaywrightTest {
         page.click("button[type='submit']");
     
         assertTrue(page.url().matches(".*/owners/1"), "Should navigate back to owner page");
-        System.out.println("✅ Pet added successfully");
+        System.out.println(" Pet added successfully");
     }
     
 
@@ -145,7 +145,7 @@ public class PlaywrightTest {
         page.click("button[type='submit']");
 
         assertTrue(page.url().matches(".*/owners/1"), "Should navigate back to owner page");
-        System.out.println("✅ Visit scheduled successfully");
+        System.out.println(" Visit scheduled successfully");
     }
 
     @Test
@@ -155,7 +155,7 @@ public class PlaywrightTest {
         page.click("button[type='submit']");
 
         assertTrue(page.locator(".help-inline").textContent().contains("must not be empty"), "Should show validation error");
-        System.out.println("✅ Proper validation for visit errors");
+        System.out.println(" Proper validation for visit errors");
     }
 
     // ===================== Veterinarian Management Tests =====================
@@ -168,14 +168,14 @@ public class PlaywrightTest {
 
         String jsonResponse = response.text();
         assertTrue(jsonResponse.contains("vetList"), "Response should contain a list of veterinarians");
-        System.out.println("✅ Veterinarians list retrieved");
+        System.out.println(" Veterinarians list retrieved");
     }
 
     @Test
     void testViewVeterinariansPage() {
         page.navigate(BASE_URL + "/vets.html");
         assertTrue(page.locator("h2").textContent().contains("Veterinarians"), "Page should contain 'Veterinarians'");
-        System.out.println("✅ Veterinarians page displayed");
+        System.out.println(" Veterinarians page displayed");
     }
 
     // ===================== Error Handling Tests =====================
@@ -185,25 +185,27 @@ public class PlaywrightTest {
         APIRequestContext request = playwright.request().newContext();
         APIResponse response = request.get(BASE_URL + "/oups");
         assertEquals(500, response.status(), "Should return HTTP 500");
-        System.out.println("✅ CrashController test passed");
+        System.out.println(" CrashController test passed");
     }
 
 
 
 
- // ✅ MR1: Additive Property
+ //  MR1: Additive Property
 // - Add two owners and verify the count increases by 2.
 @Test
 void testAdditiveProperty() {
+    // Step 1: Navigate to Owner List and Get Initial Count
     page.navigate(BASE_URL + "/owners/find");
     page.fill("[name='lastName']", "");
     page.click("button[type='submit']");
 
     // Count owners before addition
     int initialCount = page.locator("table tbody tr").count();
-    System.out.println("🔎 MR1 - Initial Owner Count: " + initialCount);
+    System.out.println(" MR1 - Initial Owner Count: " + initialCount);
 
     // Add first owner
+    // Step 2: Transformation – Add First Owner
     page.navigate(BASE_URL + "/owners/new");
     page.fill("[name='firstName']", "John");
     page.fill("[name='lastName']", "Doe");
@@ -213,6 +215,7 @@ void testAdditiveProperty() {
     page.click("button[type='submit']");
 
     // Add second owner
+    // Step 3: Transformation – Add Second Owner
     page.navigate(BASE_URL + "/owners/new");
     page.fill("[name='firstName']", "Alice");
     page.fill("[name='lastName']", "Smith");
@@ -222,15 +225,14 @@ void testAdditiveProperty() {
     page.click("button[type='submit']");
 
     // Verify owners count increased
+    // Step 4: Assertion – Verify Count Increased by 2
     page.navigate(BASE_URL + "/owners/find");
     page.fill("[name='lastName']", "");
     page.click("button[type='submit']");
-
     int finalCount = page.locator("table tbody tr").count();
     System.out.println("🔍 MR1 - Final Owner Count: " + finalCount);
-
-    assertTrue(finalCount == initialCount + 2, "❌ MR1 Failed: Owners count should increase by 2 after addition.");
-    System.out.println("✅ MR1 Passed: Adding two owners increased the count.");
+    assertTrue(finalCount == initialCount + 2, " MR1 Failed: Owners count should increase by 2 after addition.");
+    System.out.println(" MR1 Passed: Adding two owners increased the count.");
 }
 
 
@@ -251,9 +253,9 @@ void testUpdateConsistency() {
     Locator cityInfo = page.locator("table td:text-matches('.*" + newCity + ".*')").first();
     cityInfo.waitFor(new Locator.WaitForOptions().setTimeout(50000));
 
-    assertTrue(page.content().contains(newCity), "❌ MR2 Failed: Updated city not found on the page.");
+    assertTrue(page.content().contains(newCity), " MR2 Failed: Updated city not found on the page.");
 
-    System.out.println("✅ MR2 Passed: Updating an owner's city reflects correctly.");
+    System.out.println(" MR2 Passed: Updating an owner's city reflects correctly.");
 }
 
 // MR 3: Duplicate Owner Creation
@@ -276,12 +278,14 @@ void testDuplicateOwnerCreation() {
     page.fill("[name='telephone']", "1234567890");
     page.click("button[type='submit']");
 
-    System.out.println("✅ MR3 Passed: System allows duplicate owner creation.");
+    System.out.println(" MR3 Passed: System allows duplicate owner creation.");
 }
 // MR 4: Unique Pet Name Constraint
 // - Ensure that a pet's name is unique for each owner.
 @Test
 void testUniquePetNameConstraint() {
+     // Step 1: Navigation + Setup – Create a new owner
+     page.navigate(BASE_URL + "/owners/new");
     page.navigate(BASE_URL + "/owners/new");
     page.fill("[name='firstName']", "Robert");
     page.fill("[name='lastName']", "Downey");
@@ -293,22 +297,25 @@ void testUniquePetNameConstraint() {
     String[] urlParts = page.url().split("/");
     String ownerId = urlParts[urlParts.length - 1];
 
+    // Step 2: Metamorphic Transformation – Add the first pet with name "Buddy"
     page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
     page.fill("[name='name']", "Buddy");
     page.fill("[name='birthDate']", "2022-08-15");
     page.selectOption("[name='type']", "dog");
     page.click("button[type='submit']");
 
+    // Step 3: Metamorphic Transformation – Attempt to add another pet with the same name
     page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
     page.fill("[name='name']", "Buddy");
     page.fill("[name='birthDate']", "2023-01-01");
     page.selectOption("[name='type']", "cat");
     page.click("button[type='submit']");
 
+// Step 4: Assertion – Verify that a validation error is displayed
     boolean hasError = page.locator(".has-error").isVisible();
-    assertTrue(hasError, "❌ MR4 Failed: Duplicate pet name allowed for the same owner.");
+    assertTrue(hasError, " MR4 Failed: Duplicate pet name allowed for the same owner.");
 
-    System.out.println("✅ MR4 Passed: System prevents duplicate pet names for the same owner.");
+    System.out.println(" MR4 Passed: System prevents duplicate pet names for the same owner.");
 }
 
 /** 
@@ -337,7 +344,7 @@ void testReversibilityOfUpdate() {
 
     assertTrue(page.content().contains(originalCity), "❌ MR5 Failed: Original city not restored after reverting update.");
 
-    System.out.println("✅ MR5 Passed: Owner's city reverted correctly.");
+    System.out.println(" MR5 Passed: Owner's city reverted correctly.");
 }
 
 
@@ -379,7 +386,7 @@ void testReversibilityOfUpdate() {
     
         assertEquals(initialCount + 2, finalCount, "❌ MR6 Failed: Owner count did not increase correctly with commutative additions.");
     
-        System.out.println("✅ MR6 Passed: Adding owners in different orders resulted in the same count.");
+        System.out.println(" MR6 Passed: Adding owners in different orders resulted in the same count.");
     }
     
 
@@ -406,7 +413,7 @@ void testAssociativityOfUpdates() {
     page.click("button[type='submit']");
 
     assertTrue(page.content().contains("San Diego"), "❌ MR7 Failed: City did not reflect update after multiple sequences.");
-    System.out.println("✅ MR7 Passed: Updating owner details in different orders had the same effect.");
+    System.out.println("MR7 Passed: Updating owner details in different orders had the same effect.");
 }
 
 
@@ -431,7 +438,7 @@ void testReadOnlyVeterinarianListImproved() {
 
     assertEquals(firstList, secondList, "❌ MR8 Failed: Vet list changed after reload.");
 
-    System.out.println("✅ MR8 Passed: Vet list remained consistent and non-empty across reloads.");
+    System.out.println(" MR8 Passed: Vet list remained consistent and non-empty across reloads.");
 }
 
 
@@ -456,7 +463,7 @@ void testReadOnlyVeterinarianListImproved() {
     }
     
 
-// ✅ MR10: Search results should remain the same if no data is changed.
+//  MR10: Search results should remain the same if no data is changed.
 @Test
 void testSearchConsistency() {
     // Navigate to the find owners page
@@ -550,11 +557,11 @@ void testSearchConsistency() {
     // Assert that both searches return the same results
     assertEquals(firstSearchResults, secondSearchResults, "MR10 Failed : Search results should remain the same if no data is changed.");
     
-    System.out.println("✅ MR10 Passed: Search results remained consistent.");
+    System.out.println(" MR10 Passed: Search results remained consistent.");
 }
 
 
-// ✅ MR11: Owners List Order Consistency - The order should remain the same if no new owners are added
+//  MR11: Owners List Order Consistency - The order should remain the same if no new owners are added
 @Test
 void testOwnersListOrderConsistency() {
     page.navigate(BASE_URL + "/owners/find");
@@ -568,10 +575,10 @@ void testOwnersListOrderConsistency() {
     List<String> finalOrder = page.locator("table tbody tr td:first-child a").allTextContents();
 
     assertEquals(initialOrder, finalOrder, " MR11 Failed:  Owner list order should remain the same if unchanged.");
-    System.out.println("✅ MR11 Passed: Owners list order remains consistent.");
+    System.out.println(" MR11 Passed: Owners list order remains consistent.");
 }
 
-// ✅ MR12: Pet List Order Consistency - The pet list should remain the same if no changes are made
+//  MR12: Pet List Order Consistency - The pet list should remain the same if no changes are made
 @Test
 void testPetListOrderConsistency() {
     page.navigate(BASE_URL + "/owners/1");
@@ -582,10 +589,10 @@ void testPetListOrderConsistency() {
     List<String> finalPetList = page.locator(".petName").allTextContents();
 
     assertEquals(initialPetList, finalPetList, "MR12 Failed: Pet list order should remain unchanged.");
-    System.out.println("✅ MR12 Passed: Pet list order remains consistent.");
+    System.out.println(" MR12 Passed: Pet list order remains consistent.");
 }
 
-// ✅ MR13: Pet Birthdate Consistency - Changing a pet's birthdate should reflect correctly
+//  MR13: Pet Birthdate Consistency - Changing a pet's birthdate should reflect correctly
 @Test
 void testPetBirthdateUpdate() {
     page.navigate(BASE_URL + "/owners/1/pets/1/edit");
@@ -596,10 +603,10 @@ void testPetBirthdateUpdate() {
     // Verify update
     page.navigate(BASE_URL + "/owners/1");
     assertTrue(page.content().contains(newBirthDate), "MR13 Failed: Pet birthdate should be updated.");
-    System.out.println("✅ MR13 Passed: Updating a pet’s birthdate reflects correctly.");
+    System.out.println(" MR13 Passed: Updating a pet’s birthdate reflects correctly.");
 }
 
-// ✅ MR14: Owner Contact Update Persistence - Updating a phone number should persist
+//  MR14: Owner Contact Update Persistence - Updating a phone number should persist
 @Test
 void testOwnerPhoneNumberUpdate() {
     page.navigate(BASE_URL + "/owners/1/edit");
@@ -610,10 +617,10 @@ void testOwnerPhoneNumberUpdate() {
     // Verify update
     page.navigate(BASE_URL + "/owners/1");
     assertTrue(page.content().contains(newPhone), "MR14 Failed: Updated phone number should persist.");
-    System.out.println("✅ MR14 Passed: Updating owner phone number persists correctly.");
+    System.out.println(" MR14 Passed: Updating owner phone number persists correctly.");
 }
 
-// ✅ MR15: Pet Type Update - Changing a pet type should reflect correctly
+//  MR15: Pet Type Update - Changing a pet type should reflect correctly
 @Test
 void testPetTypeUpdate() {
     page.navigate(BASE_URL + "/owners/1/pets/1/edit");
@@ -623,23 +630,51 @@ void testPetTypeUpdate() {
     // Verify update
     page.navigate(BASE_URL + "/owners/1");
     assertTrue(page.content().contains("cat"), "MR15 Failed:  Pet type should be updated.");
-    System.out.println("✅ MR15 Passed: Pet type update reflects correctly.");
+    System.out.println(" MR15 Passed: Pet type update reflects correctly.");
 }
 
-// ✅ MR16: Find Owner by Partial Name - Searching part of an owner's name should return results
+
+// @Test
+// void testFindOwnerByPartialName() {
+//     page.navigate(BASE_URL + "/owners/find");
+//     page.fill("[name='lastName']", "D");
+//     page.click("button[type='submit']");
+
+//     assertTrue(page.locator("table tbody tr").count() > 0, "MR16 Failed: At least one owner should be found.");
+//     System.out.println(" MR16 Passed: Searching by partial name returns owners.");
+// }
+
+// MR16: Find Owner by Partial Name - Searching part of an owner's name should return results
 @Test
-void testFindOwnerByPartialName() {
+void mrFindOwnerByPartialNameSubset() {
+    String seedInput = "";       // Empty input (returns all owners)
+    String morphedInput = "D";   // Partial last name
+
+    // Step 1: Search with seed input (empty string)
     page.navigate(BASE_URL + "/owners/find");
-    page.fill("[name='lastName']", "D");
+    page.fill("[name='lastName']", seedInput);
     page.click("button[type='submit']");
 
-    assertTrue(page.locator("table tbody tr").count() > 0, "MR16 Failed: At least one owner should be found.");
-    System.out.println("✅ MR16 Passed: Searching by partial name returns owners.");
+    List<String> seedResults = page.locator("table tbody tr td a").allTextContents();
+    System.out.println("🔎 Seed (empty input) search results: " + seedResults);
+
+    // Step 2: Search with morphed input (partial name)
+    page.navigate(BASE_URL + "/owners/find");
+    page.fill("[name='lastName']", morphedInput);
+    page.click("button[type='submit']");
+
+    List<String> morphedResults = page.locator("table tbody tr td a").allTextContents();
+    System.out.println("🔎 Morphed (partial input) search results: " + morphedResults);
+
+    // Step 3: Assert metamorphic relation: morphedResults ⊆ seedResults
+    assertTrue(seedResults.containsAll(morphedResults), "❌ MR16 Failed: Partial search results are not a subset of all owners search.");
+
+    System.out.println("✅ MR16 Passed: Partial search results are a subset of all owners.");
 }
 
 
-// ✅ MR17: Visit List Consistency - Visits for a pet should be consistent across reloads
-// ✅ MR17: Visit List Consistency - Visits for a pet should be consistent across reloads
+
+//  MR17: Visit List Consistency - Visits for a pet should be consistent across reloads
 @Test
 void testVisitAdditionDetected() {
     // Navigate to owner page
@@ -651,7 +686,7 @@ void testVisitAdditionDetected() {
     // Extract all visit dates for that pet
     List<String> visitDates = petSection.locator("table.table-condensed tbody tr td:first-child").allTextContents();
 
-    System.out.println("🪵 MR17 Visit dates: " + visitDates);
+    System.out.println(" MR17 Visit dates: " + visitDates);
 
     // Check if visit dates are in correct (chronological or reverse) order
     List<String> sorted = new ArrayList<>(visitDates);
@@ -660,12 +695,12 @@ void testVisitAdditionDetected() {
 
     assertEquals(sorted, visitDates, "MR17 Failed: Visit dates are not in expected order.");
 
-    System.out.println("✅ MR17 Passed: Visit order is consistent.");
+    System.out.println(" MR17 Passed: Visit order is consistent.");
 }
 
 
 /**
- * ✅ MR18: Visit Addition Detection
+ *  MR18: Visit Addition Detection
  * - Add a new visit for a pet.
  * - Reload the owner's page.
  * - Verify that the visit count increases.
@@ -678,7 +713,7 @@ void testVisitAdditionDetection() {
     Locator visitRowsBefore = page.locator("table.table-condensed tbody tr");
     int beforeCount = visitRowsBefore.count();
 
-    System.out.println("🔎 MR18 - Visits BEFORE addition: " + beforeCount);
+    System.out.println(" MR18 - Visits BEFORE addition: " + beforeCount);
 
     // Step 2: Add a new visit
     page.navigate(BASE_URL + "/owners/1/pets/1/visits/new");
@@ -691,11 +726,11 @@ void testVisitAdditionDetection() {
     Locator visitRowsAfter = page.locator("table.table-condensed tbody tr");
     int afterCount = visitRowsAfter.count();
 
-    System.out.println("🔍 MR18 - Visits AFTER addition: " + afterCount);
+    System.out.println(" MR18 - Visits AFTER addition: " + afterCount);
 
     // Step 4: Assertion
-    assertTrue(afterCount == beforeCount + 1, "❌ MR18 Failed: Visit count did not increase after adding.");
-    System.out.println("✅ MR18 Passed: Visit successfully added and detected.");
+    assertTrue(afterCount == beforeCount + 1, " MR18 Failed: Visit count did not increase after adding.");
+    System.out.println(" MR18 Passed: Visit successfully added and detected.");
 }
 
 

@@ -34,3 +34,6 @@ npx playwright --version
 # 8. PetController .java
 # 9. OwnerController.java
 # 10. PetController.java
+
+# mvn test -Dtest='org.springframework.samples.petclinic.**.*Test'
+# MR Coverage  = java -javaagent:jacocoagent.jar=destfile=jacoco-mr.exec -jar target/spring-petclinic-2.4.2.jar
