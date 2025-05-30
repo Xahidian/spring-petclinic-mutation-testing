@@ -41,6 +41,7 @@ public class PlaywrightTest {
      */
  @Test
     void testMR1_AdditiveProperty() {
+        // Seed Input: Add first owner
         page.navigate(BASE_URL + "/owners/new");
         page.fill("[name='firstName']", "John");
         page.fill("[name='lastName']", "Doe");
@@ -49,13 +50,13 @@ public class PlaywrightTest {
         page.fill("[name='telephone']", "123456");
         page.click("button[type='submit']");
         System.out.println("🔹 Seed Input: First owner added.");
-
+// Seed Output: Count owners after first addition
         page.navigate(BASE_URL + "/owners/find");
         page.fill("[name='lastName']", "");
         page.click("button[type='submit']");
         int seedCount = page.locator("table tbody tr").count();
         System.out.println("🔹 Seed Output: Owner count after first addition = " + seedCount);
-
+// Morphed Input: Add second owner
         page.navigate(BASE_URL + "/owners/new");
         page.fill("[name='firstName']", "Alice");
         page.fill("[name='lastName']", "Smith");
@@ -64,76 +65,84 @@ public class PlaywrightTest {
         page.fill("[name='telephone']", "789456");
         page.click("button[type='submit']");
         System.out.println("🔹 Morphed Input: Second owner added.");
-
+// Morphed Output: Count owners after second addition
         page.navigate(BASE_URL + "/owners/find");
         page.fill("[name='lastName']", "");
         page.click("button[type='submit']");
         int morphedCount = page.locator("table tbody tr").count();
         System.out.println("🔹 Morphed Output: Owner count after second addition = " + morphedCount);
-
+// Relation Check: Count should increase by 1
         System.out.println("🔹 Relation Check: morphedCount == seedCount + 1");
         assertEquals(seedCount + 1, morphedCount, "MR1 Failed: Owner count should increase by exactly 1.");
         System.out.println("✅ MR1 Passed: Owner count increased as expected.");
     }
 
 
-    /**
-     * MR2: Reversibility of Owner Update
-     * - Seed Input: Capture original city.
-     * - Transformation: Change city, then revert.
-     * - Morphed Output: Fetch city after reversion.
-     * - Relation: City should match original.
-     */
+/**
+ * MR2: City Update Consistency
+ * - Seed Input: Create an owner with initial data including city.
+ * - Input Transformation: Update only the city field to a new value.
+ * - Morphed Input: Owner data with updated city.
+ * - Seed Output: Initial owner data with original city.
+ * - Morphed Output: Updated owner data with new city; other fields unchanged.
+ * - Relation: Only city is updated; other fields remain stable.
+ */
 @Test
-void testMR2_ReversibilityOfUpdate() {
-    // 🔹 Step 1: Seed Input – Create a new owner with a controlled city value
+void testMR2_CityUpdateConsistency() {
+    // Seed Input values
+    String seedFirstName = "Test";
+    String seedLastName = "Owner";
+    String seedAddress = "123 Main St";
     String seedCity = "Turku";
+    String seedTelephone = "1234567890";
+    String morphedCity = "Helsinki";
+
+    // 🔹 Step 1: Seed Input – Create a new owner with controlled initial data
     page.navigate(BASE_URL + "/owners/new");
-    page.fill("[name='firstName']", "Test");
-    page.fill("[name='lastName']", "Owner");
-    page.fill("[name='address']", "123 Main St");
+    page.fill("[name='firstName']", seedFirstName);
+    page.fill("[name='lastName']", seedLastName);
+    page.fill("[name='address']", seedAddress);
     page.fill("[name='city']", seedCity);
-    page.fill("[name='telephone']", "1234567890");
+    page.fill("[name='telephone']", seedTelephone);
     page.click("button[type='submit']");
     page.waitForLoadState(LoadState.NETWORKIDLE);
 
-    // Extract dynamic ownerId from URL
+    // 🔹 Step 2: Extract dynamic owner ID from URL
     String[] urlParts = page.url().split("/");
     String ownerId = urlParts[urlParts.length - 1];
-    System.out.println("🔹 Seed Input: New owner created with city = " + seedCity + ", Owner ID = " + ownerId);
+    System.out.println("🔹 Seed Input: Created owner with city = " + seedCity + ", Owner ID = " + ownerId);
 
-    // 🔹 Step 2: Seed Output – Confirm original city is correct
+    // 🔹 Step 3: Seed Output – Capture initial data
     page.navigate(BASE_URL + "/owners/" + ownerId);
     String seedOutputCity = page.textContent("table th:has-text('City') + td").trim();
-    System.out.println("🔹 Seed Output: City after input = " + seedOutputCity);
+    String seedOutputName = page.textContent("table th:has-text('Name') + td").trim();
+    String seedOutputAddress = page.textContent("table th:has-text('Address') + td").trim();
+    String seedOutputTelephone = page.textContent("table th:has-text('Telephone') + td").trim();
 
-    // 🔹 Step 3: Morphed Input – Update city to a new value
-    String morphedCity = "Helsiniki";
+    System.out.println("🔹 Seed Output: City = " + seedOutputCity + ", Name = " + seedOutputName);
+
+    // 🔹 Step 4: Input Transformation – Update the city to a new value
     page.navigate(BASE_URL + "/owners/" + ownerId + "/edit");
     page.fill("[name='city']", morphedCity);
     page.click("button[type='submit']");
     System.out.println("🔹 Morphed Input: Updated city to = " + morphedCity);
 
-    // 🔹 Step 4: Morphed Output – Confirm city updated
+    // 🔹 Step 5: Morphed Output – Capture updated data
     page.navigate(BASE_URL + "/owners/" + ownerId);
     String morphedOutputCity = page.textContent("table th:has-text('City') + td").trim();
-    System.out.println("🔹 Morphed Output: City after update = " + morphedOutputCity);
+    String morphedOutputName = page.textContent("table th:has-text('Name') + td").trim();
+    String morphedOutputAddress = page.textContent("table th:has-text('Address') + td").trim();
+    String morphedOutputTelephone = page.textContent("table th:has-text('Telephone') + td").trim();
 
-    // 🔹 Step 5: Additional Transformation – Revert city back to seed
-    page.navigate(BASE_URL + "/owners/" + ownerId + "/edit");
-    page.fill("[name='city']", seedCity);
-    page.click("button[type='submit']");
-    System.out.println("🔹 Additional Input: City reverted to original = " + seedCity);
+    System.out.println("🔹 Morphed Output: City = " + morphedOutputCity + ", Name = " + morphedOutputName);
 
-    // 🔹 Step 6: Final Output – Confirm city reverted
-    page.navigate(BASE_URL + "/owners/" + ownerId);
-    String finalOutputCity = page.textContent("table th:has-text('City') + td").trim();
-    System.out.println("🔹 Final Output: City after reversion = " + finalOutputCity);
+    // 🔹 Step 6: Relation Check – Only city updated; other fields unchanged
+    assertEquals(morphedCity, morphedOutputCity, "MR2 Failed: City was not updated correctly.");
+    assertEquals(seedOutputName, morphedOutputName, "MR2 Failed: Name changed unexpectedly.");
+    assertEquals(seedOutputAddress, morphedOutputAddress, "MR2 Failed: Address changed unexpectedly.");
+    assertEquals(seedOutputTelephone, morphedOutputTelephone, "MR2 Failed: Telephone changed unexpectedly.");
 
-    // 🔹 Step 7: Relation Check – Final output should match seed output
-    System.out.println("🔹 Relation Check: finalOutputCity == seedOutputCity");
-    assertEquals(seedOutputCity, finalOutputCity, "❌ MR2 Failed: City did not revert to original value.");
-    System.out.println("✅ MR2 Passed: City reverted to original value as expected.");
+    System.out.println("✅ MR2 Passed: Only city updated, other fields remain stable.");
 }
 
 
@@ -263,34 +272,39 @@ void testMR4_PetListUpdate() {
     assertEquals(expectedPets, morphedPets, "MR4 Failed: Pet list not updated as expected.");
     System.out.println("✅ MR4 Passed: Pet list updated correctly with new pet.");
 }
+/**
+ * MR5: Pet Birth Date Update Consistency
+ * - Seed Input: Create a pet with an initial birth date.
+ * - Input Transformation: Update only the birth date to a new value.
+ * - Morphed Input: Pet with updated birth date.
+ * - Seed Output: Original pet details with initial birth date.
+ * - Morphed Output: Pet details with updated birth date; other fields unchanged.
+ * - Relation: Only birth date is updated; other fields remain stable.
+ */
 @Test
-void testMR5_PetBirthDateReversibility() {
-    // MR5: Pet Birth Date Reversibility
-    // Seed Input: Create owner and pet, get original birth date
-    // Transformation: Change birth date, then revert
-    // Seed Output: Original birth date
-    // Morphed Output: Birth date after revert
-    // Relation: Birth date after revert equals original
-
-    String newOwnerFirstName = "MR5Owner";
-    String newOwnerLastName = "Test";
+void testMR5_PetBirthDateUpdateConsistency() {
+    String ownerFirstName = "MR5Owner";
+    String ownerLastName = "Test";
     String petName = "BuddyMR5";
     String petType = "dog";
     String originalBirthDate = "2015-09-07";
     String newBirthDate = "2018-05-15";
+    String ownerAddress = "123 Main St";
+    String ownerCity = "TestCity";
+    String ownerTelephone = "1234567890";
 
-    // Create new owner
+    // 🔹 Seed Input: Create a new owner
     page.navigate(BASE_URL + "/owners/new");
-    page.fill("[name='firstName']", newOwnerFirstName);
-    page.fill("[name='lastName']", newOwnerLastName);
-    page.fill("[name='address']", "123 Main St");
-    page.fill("[name='city']", "TestCity");
-    page.fill("[name='telephone']", "1234567890");
+    page.fill("[name='firstName']", ownerFirstName);
+    page.fill("[name='lastName']", ownerLastName);
+    page.fill("[name='address']", ownerAddress);
+    page.fill("[name='city']", ownerCity);
+    page.fill("[name='telephone']", ownerTelephone);
     page.click("button[type='submit']");
     String ownerId = page.url().split("/")[page.url().split("/").length - 1];
     System.out.println("🔹 Seed Input: Created owner with ID " + ownerId);
 
-    // Add pet
+    // 🔹 Seed Input: Add a new pet with initial birth date
     page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
     page.fill("[name='name']", petName);
     page.fill("[name='birthDate']", originalBirthDate);
@@ -298,46 +312,41 @@ void testMR5_PetBirthDateReversibility() {
     page.click("button[type='submit']");
     System.out.println("🔹 Seed Input: Created pet " + petName + " with birth date " + originalBirthDate);
 
-    // Extract petId from the pet's edit link
+    // 🔹 Extract petId from edit link
     page.navigate(BASE_URL + "/owners/" + ownerId);
     Locator editLink = page.locator("h2:has-text('Pets and Visits') + table")
                            .locator("a:has-text('Edit')").first();
-    String editHref = editLink.getAttribute("href"); // e.g., /owners/{ownerId}/pets/{petId}/edit
+    String editHref = editLink.getAttribute("href");
     String[] parts = editHref.split("/");
-    String petId = parts[parts.length - 2]; // second last part should be petId
+    String petId = parts[parts.length - 2];
     System.out.println("🔹 Extracted pet ID: " + petId);
 
-    // Seed Output: Get original birth date
+    // 🔹 Seed Output: Capture original pet details
     Locator details = page.locator("h2:has-text('Pets and Visits') + table").locator("tr td dl");
-    String seedDate = details.locator("dt:has-text('Birth Date') + dd").first().textContent().trim();
-    System.out.println("🔹 Seed Output: Original birth date = " + seedDate);
+    String seedBirthDate = details.locator("dt:has-text('Birth Date') + dd").first().textContent().trim();
+    String seedName = details.locator("dt:has-text('Name') + dd").first().textContent().trim();
+    String seedType = details.locator("dt:has-text('Type') + dd").first().textContent().trim();
+    System.out.println("🔹 Seed Output: Birth Date = " + seedBirthDate + ", Name = " + seedName + ", Type = " + seedType);
 
-    // Morphed Input: Update birth date to new value
+    // 🔹 Input Transformation & Morphed Input: Update birth date to new value
     page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/" + petId + "/edit");
     page.fill("[name='birthDate']", newBirthDate);
     page.click("button[type='submit']");
     System.out.println("🔹 Morphed Input: Updated birth date to " + newBirthDate);
 
-    // Morphed Output: Get updated birth date
+    // 🔹 Morphed Output: Capture updated details
     page.navigate(BASE_URL + "/owners/" + ownerId);
-    String morphedDate = details.locator("dt:has-text('Birth Date') + dd").first().textContent().trim();
-    System.out.println("🔹 Morphed Output: Updated birth date = " + morphedDate);
-    assertEquals(newBirthDate, morphedDate, "MR5 Failed: Birth date not updated to new value.");
+    String morphedBirthDate = details.locator("dt:has-text('Birth Date') + dd").first().textContent().trim();
+    String morphedName = details.locator("dt:has-text('Name') + dd").first().textContent().trim();
+    String morphedType = details.locator("dt:has-text('Type') + dd").first().textContent().trim();
+    System.out.println("🔹 Morphed Output: Birth Date = " + morphedBirthDate + ", Name = " + morphedName + ", Type = " + morphedType);
 
-    // Revert: Change birth date back to original
-    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/" + petId + "/edit");
-    page.fill("[name='birthDate']", seedDate);
-    page.click("button[type='submit']");
-    System.out.println("🔹 Reverted Input: Birth date reverted to " + seedDate);
+    // 🔹 Relation Check: Only birth date updated, other fields unchanged
+    assertEquals(newBirthDate, morphedBirthDate, "MR5 Failed: Birth date was not updated correctly.");
+    assertEquals(seedName, morphedName, "MR5 Failed: Name changed unexpectedly.");
+    assertEquals(seedType, morphedType, "MR5 Failed: Type changed unexpectedly.");
 
-    // Final Output: Get final birth date after revert
-    page.navigate(BASE_URL + "/owners/" + ownerId);
-    String finalDate = details.locator("dt:has-text('Birth Date') + dd").first().textContent().trim();
-    System.out.println("🔹 Final Output: Birth date after revert = " + finalDate);
-
-    // Check metamorphic relation
-    assertEquals(seedDate, finalDate, "MR5 Failed: Birth date did not revert to original value.");
-    System.out.println("✅ MR5 Passed: Birth date reverted correctly to original.");
+    System.out.println("✅ MR5 Passed: Only birth date was updated; other fields remained stable.");
 }
 
 @Test
@@ -375,9 +384,23 @@ void testMR6_FindOwnerPartialName() {
     assertTrue(relationHolds, "MR6 Failed: Partial search results are not a subset of all owners.");
     System.out.println("✅ MR6 Passed: Partial search results are a subset of all owners.");
 }
+/**
+ * MR7: Visit List Additivity (Visit List Consistency)
+ * - Seed Input: Create a new owner and pet, and add an initial visit.
+ * - Transformation: Add a new visit to the same pet.
+ * - Morphed Input: Provide the new visit details (description and date).
+ * - Seed Output: Fetch the list of visit descriptions after the initial visit.
+ * - Morphed Output: Fetch the list of visit descriptions after adding the new visit.
+ * - Relation: The morphed visit list should include the seed list plus the new visit,
+ *   verifying that adding a new visit preserves existing visits.
+ * - Purpose: Validate that the system correctly appends new visit records without 
+ *   overwriting or missing previous data (additivity and consistency of visit records).
+ */
 @Test
 void testMR7_VisitListAdditivity_MT() {
     String BASE_URL = "http://localhost:9090";
+
+    // 🌱 Seed Input: Create new owner and pet (initial system state)
     page.navigate(BASE_URL + "/owners/new");
     page.fill("[name='firstName']", "JohnMR7");
     page.fill("[name='lastName']", "DoeMR7");
@@ -388,42 +411,41 @@ void testMR7_VisitListAdditivity_MT() {
     String ownerId = page.url().split("/")[page.url().split("/").length - 1];
     System.out.println("🔹 Created owner with ID: " + ownerId);
 
-    // Add new pet and capture pet ID dynamically
     page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
     page.fill("[name='name']", "BuddyMR7");
     page.fill("[name='birthDate']", "2015-09-07");
     page.selectOption("[name='type']", "dog");
     page.click("button[type='submit']");
     page.waitForLoadState(LoadState.NETWORKIDLE);
-    page.navigate(BASE_URL + "/owners/" + ownerId); // Go to owner page
+    page.navigate(BASE_URL + "/owners/" + ownerId);
 
-    // Locate the pet row dynamically and extract Pet ID
+    // 🌿 Extract Pet ID dynamically from "Add Visit" link
     Locator petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText("BuddyMR7")).first();
     String addVisitHref = petRow.locator("a:has-text('Add Visit')").getAttribute("href");
     String[] parts = addVisitHref.split("/");
-    String petId = parts[parts.length - 3]; // e.g., /owners/{ownerId}/pets/{petId}/visits/new
+    String petId = parts[parts.length - 3];
     System.out.println("🔹 Located BuddyMR7 with Pet ID: " + petId);
 
-    // 🌿 Add initial visit (Seed Input)
+    // 🌿 Transformation: Add initial visit (seed state modification)
     String addVisitUrl = BASE_URL + "/owners/" + ownerId + "/pets/" + petId + "/visits/new";
     System.out.println("🔹 Seed Input: Navigating to Add Visit page: " + addVisitUrl);
-    page.navigate(addVisitUrl);
     String seedVisitDesc = "Initial Visit for MR7";
+    page.navigate(addVisitUrl);
     page.fill("[name='description']", seedVisitDesc);
     page.click("button[type='submit']");
     page.waitForLoadState(LoadState.NETWORKIDLE);
     page.waitForTimeout(2000);
     System.out.println("🔹 Seed Input: Added initial visit with description '" + seedVisitDesc + "'");
 
-    // 🌿 Capture Seed Output
+    // 🌿 Seed Output: Capture visit list after initial transformation
     page.navigate(BASE_URL + "/owners/" + ownerId);
     petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText("BuddyMR7")).first();
     Locator visitDescriptionsLocator = petRow.locator("td:nth-child(2) table.table-condensed tr td:nth-child(2)");
     List<String> seedVisits = visitDescriptionsLocator.allTextContents();
     System.out.println("🔹 Seed Output: Visit descriptions = " + seedVisits);
 
-    // 🌿 Add morphed visit (Morphed Input)
-    page.navigate(addVisitUrl); // Reuse correct dynamic URL
+    // 🌿 Morphed Input: Add a second visit (transformation - new input)
+    page.navigate(addVisitUrl); // Use correct dynamic URL for adding visit
     String morphedVisitDesc = "New Visit for MR7";
     page.fill("[name='description']", morphedVisitDesc);
     page.click("button[type='submit']");
@@ -431,14 +453,15 @@ void testMR7_VisitListAdditivity_MT() {
     page.waitForTimeout(2000);
     System.out.println("🔹 Morphed Input: Added new visit with description '" + morphedVisitDesc + "'");
 
-    // 🌿 Capture Morphed Output
+    // 🌿 Morphed Output: Capture updated visit list after transformation
     page.navigate(BASE_URL + "/owners/" + ownerId);
     petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText("BuddyMR7")).first();
     visitDescriptionsLocator = petRow.locator("td:nth-child(2) table.table-condensed tr td:nth-child(2)");
     List<String> morphedVisits = visitDescriptionsLocator.allTextContents();
     System.out.println("🔹 Morphed Output: Visit descriptions = " + morphedVisits);
 
-    // 🌿 Relation Check
+    // 🔎 Relation: Morphed Output = Seed Output + New Visit
+    // The relation checks that adding a new visit appends it to the list without removing previous data
     List<String> expectedVisits = new ArrayList<>(seedVisits);
     expectedVisits.add(morphedVisitDesc);
     Collections.sort(expectedVisits, Collections.reverseOrder());
@@ -447,26 +470,80 @@ void testMR7_VisitListAdditivity_MT() {
     System.out.println("✅ MR7 Passed: Visit list updated correctly.");
 }
 
-    /**
-     * MR8: Visit Addition Detection (Fault Detection)
-     * - Seed Input: Count initial visits.
-     * - Transformation: Add new visit.
-     * - Morphed Output: Count updated visits.
-     * - Relation: Count increased by 1.
-     */
-    @Test
-    void testMR8_VisitAdditionDetection() {
-        String ownerId = "1", petId = "1", newDate = "2025-06-02", newDesc = "Add Test Visit";
-        page.navigate(BASE_URL + "/owners/" + ownerId);
-        Locator visits = page.locator("h2:has-text('Pets and Visits') + table").locator("tr td table.table-condensed");
-        int seedCount = visits.locator("tr td:nth-child(2)").allTextContents().size();
+/**
+ * MR8: Visit Addition Consistency
+ * - Seed Input: Create owner and pet, and count initial visits.
+ * - Input Transformation: Add a new visit to the same pet.
+ * - Morphed Input: Pet with the additional visit added.
+ * - Seed Output: Initial count of visits for the pet.
+ * - Morphed Output: Updated count of visits after new visit.
+ * - Relation: Visit count should increase by exactly 1.
+ */
+@Test
+void testMR8_VisitAdditionConsistency() {
+    String ownerFirstName = "JohnMR8";
+    String ownerLastName = "DoeMR8";
+    String petName = "BuddyMR8";
+    String petType = "dog";
+    String ownerAddress = "456 Test Ave";
+    String ownerCity = "TestCity";
+    String ownerTelephone = "1234567890";
+    String newVisitDate = "2025-06-02";
+    String newVisitDesc = "Add Test Visit MR8";
 
-        page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/" + petId + "/visits/new");
-        page.fill("[name='date']", newDate); page.fill("[name='description']", newDesc); page.click("button[type='submit']");
+    // 🔹 Step 1: Seed Input – Create owner and pet
+    page.navigate(BASE_URL + "/owners/new");
+    page.fill("[name='firstName']", ownerFirstName);
+    page.fill("[name='lastName']", ownerLastName);
+    page.fill("[name='address']", ownerAddress);
+    page.fill("[name='city']", ownerCity);
+    page.fill("[name='telephone']", ownerTelephone);
+    page.click("button[type='submit']");
+    String ownerId = page.url().split("/")[page.url().split("/").length - 1];
+    System.out.println("🔹 Seed Input: Created owner with ID " + ownerId);
 
-        page.navigate(BASE_URL + "/owners/" + ownerId);
-        int morphedCount = visits.locator("tr td:nth-child(2)").allTextContents().size();
-        assertEquals(seedCount + 1, morphedCount, "MR8 Failed: Visit count did not increase by 1.");
-        System.out.println("✅ MR8 Passed: Visit count increased correctly.");
-    }
+    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
+    page.fill("[name='name']", petName);
+    page.fill("[name='birthDate']", "2018-01-01");
+    page.selectOption("[name='type']", petType);
+    page.click("button[type='submit']");
+    page.waitForLoadState(LoadState.NETWORKIDLE);
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+
+    // 🔹 Step 2: Extract petId for locating the pet's visit list
+    Locator petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText(petName)).first();
+    String addVisitHref = petRow.locator("a:has-text('Add Visit')").getAttribute("href");
+    String[] parts = addVisitHref.split("/");
+    String petId = parts[parts.length - 3];
+    System.out.println("🔹 Located " + petName + " with Pet ID: " + petId);
+
+    // 🔹 Step 3: Seed Output – Count initial number of visits
+    Locator visitsLocator = petRow.locator("td:nth-child(2) table.table-condensed tr td:nth-child(2)");
+    int seedVisitCount = visitsLocator.count();
+    System.out.println("🔹 Seed Output: Initial visit count = " + seedVisitCount);
+
+    // 🔹 Step 4: Input Transformation – Prepare to add a new visit
+    String addVisitUrl = BASE_URL + "/owners/" + ownerId + "/pets/" + petId + "/visits/new";
+
+    // 🔹 Step 5: Morphed Input – Add a new visit (transformation)
+    page.navigate(addVisitUrl);
+    page.fill("[name='date']", newVisitDate);
+    page.fill("[name='description']", newVisitDesc);
+    page.click("button[type='submit']");
+    page.waitForLoadState(LoadState.NETWORKIDLE);
+    page.waitForTimeout(2000);  // Allow for backend update
+    System.out.println("🔹 Morphed Input: Added visit with description '" + newVisitDesc + "'");
+
+    // 🔹 Step 6: Morphed Output – Count updated number of visits
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText(petName)).first();
+    visitsLocator = petRow.locator("td:nth-child(2) table.table-condensed tr td:nth-child(2)");
+    int morphedVisitCount = visitsLocator.count();
+    System.out.println("🔹 Morphed Output: Updated visit count = " + morphedVisitCount);
+
+    // 🔹 Step 7: Relation Check – Visit count should increase by 1
+    assertEquals(seedVisitCount + 1, morphedVisitCount, "MR8 Failed: Visit count did not increase by 1.");
+    System.out.println("✅ MR8 Passed: Visit count increased correctly.");
+}
+
 }
