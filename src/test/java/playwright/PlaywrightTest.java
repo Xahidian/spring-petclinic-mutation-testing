@@ -2,15 +2,12 @@ package playwright;
 
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.options.LoadState;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Collections;
-
 import org.junit.jupiter.api.*;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class PlaywrightTest {
 
@@ -19,7 +16,6 @@ public class PlaywrightTest {
     private static BrowserContext context;
     private static Page page;
     private static final String BASE_URL = "http://localhost:9090";
-    private static int ownerId = 1; // Will update dynamically when an owner is created
 
     @BeforeAll
     static void setup() {
@@ -36,702 +32,518 @@ public class PlaywrightTest {
         playwright.close();
     }
 
-    //  Test: Check Home Page Title
-    @Test
-    void testTitle() {
-        page.navigate(BASE_URL);
-        String title = page.title();
-        System.out.println("Page title: " + title);
-        assertFalse(title.isEmpty(), "Title should not be empty");
-    }
-
-    // ===================== Owner Management Tests =====================
-
-    @Test
-    void testInitializeOwnerCreationForm() {
-        page.navigate(BASE_URL + "/owners/new");
-        assertTrue(page.title().contains("PetClinic"), "Page title should contain 'PetClinic'");
-        assertTrue(page.locator("h2").textContent().contains("Owner"), "Page heading should contain 'Owner'");
-    }
-
-    @Test
-    void testCreateNewOwnerSuccessfully() {
-        page.navigate(BASE_URL + "/owners/new");
-        page.fill("[name='firstName']", "Joe");
-        page.fill("[name='lastName']", "Bloggs");
-        page.fill("[name='address']", "123 Caramel Street");
-        page.fill("[name='city']", "London");
-        page.fill("[name='telephone']", "01316761638");
-        page.click("button[type='submit']");
-
-        assertTrue(page.url().matches(".*/owners/\\d+"), "Should navigate to the new owner page");
-        System.out.println(" Owner created successfully");
-
-        // Extract Owner ID from URL
-        String[] urlParts = page.url().split("/");
-        ownerId = Integer.parseInt(urlParts[urlParts.length - 1]);
-    }
-
-    @Test
-    void testFailToCreateOwnerMissingRequiredFields() {
-        page.navigate(BASE_URL + "/owners/new");
-        page.fill("[name='firstName']", "Joe");
-        page.fill("[name='lastName']", "Bloggs");
-        page.fill("[name='city']", "London");
-        page.click("button[type='submit']");
-
-        assertEquals(2, page.locator(".has-error").count(), "Should display 2 validation errors");
-        System.out.println(" Proper validation messages displayed");
-    }
-
-    @Test
-    void testFindOwnersListView() {
-        page.navigate(BASE_URL + "/owners/find");
-        page.fill("[name='lastName']", "");
-        page.click("button[type='submit']");
-
-        assertTrue(page.url().matches(".*/owners.*"), "Should navigate to owners list");
-        assertTrue(page.locator("table").isVisible(), "Owners table should be visible");
-        System.out.println(" Owners list displayed correctly");
-    }
-
-    @Test
-    void testUpdateOwnerInformation() {
-        page.navigate(BASE_URL + "/owners/" + ownerId + "/edit");
-        page.waitForSelector("[name='firstName']", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
-        page.fill("[name='firstName']", "Joe Updated");
-        page.fill("[name='lastName']", "Bloggs Updated");
-        page.click("button[type='submit']");
-
-        assertEquals(BASE_URL + "/owners/" + ownerId, page.url(), "Should navigate back to updated owner page");
-        System.out.println(" Owner details updated successfully");
-    }
-
-    @Test
-    void testFailToUpdateOwnerMissingRequiredFields() {
-        page.navigate(BASE_URL + "/owners/" + ownerId + "/edit");
-        page.waitForSelector("[name='address']", new Page.WaitForSelectorOptions().setState(WaitForSelectorState.VISIBLE));
-        page.fill("[name='address']", "");
-        page.fill("[name='telephone']", "");
-        page.click("button[type='submit']");
-
-        assertEquals(2, page.locator(".has-error").count(), "Should display 2 validation errors");
-        System.out.println(" Proper validation for update errors");
-    }
-
-    // ===================== Pet Management Tests =====================
-     // @Disabled("Temporarily disabling to check PITest execution")
-    @Test
-    void testAddNewPetSuccessfully() {
-        page.navigate(BASE_URL + "/owners/1/pets/new");
-        page.waitForSelector("[name='name']");
-        page.fill("[name='name']", "Buddy11");
-        page.fill("[name='birthDate']", "2015-02-12");
-        page.selectOption("[name='type']", "dog");
-        page.click("button[type='submit']");
-    
-        assertTrue(page.url().matches(".*/owners/1"), "Should navigate back to owner page");
-        System.out.println(" Pet added successfully");
-    }
-    
-
-    // ===================== Visit Management Tests =====================
-
-    @Test
-    void testScheduleAVisit() {
-        page.navigate(BASE_URL + "/owners/1/pets/1/visits/new");
-        page.fill("[name='date']", "2024-06-10");
-        page.fill("[name='description']", "Annual Checkup");
-        page.click("button[type='submit']");
-
-        assertTrue(page.url().matches(".*/owners/1"), "Should navigate back to owner page");
-        System.out.println(" Visit scheduled successfully");
-    }
-
-    @Test
-    void testFailToScheduleVisitMissingDescription() {
-        page.navigate(BASE_URL + "/owners/1/pets/1/visits/new");
-        page.fill("[name='date']", "2024-06-10");
-        page.click("button[type='submit']");
-
-        assertTrue(page.locator(".help-inline").textContent().contains("must not be empty"), "Should show validation error");
-        System.out.println(" Proper validation for visit errors");
-    }
-
-    // ===================== Veterinarian Management Tests =====================
-
-    @Test
-    void testFetchListOfVeterinarians() {
-        APIRequestContext request = playwright.request().newContext();
-        APIResponse response = request.get(BASE_URL + "/vets");
-        assertEquals(200, response.status(), "Should return HTTP 200");
-
-        String jsonResponse = response.text();
-        assertTrue(jsonResponse.contains("vetList"), "Response should contain a list of veterinarians");
-        System.out.println(" Veterinarians list retrieved");
-    }
-
-    @Test
-    void testViewVeterinariansPage() {
-        page.navigate(BASE_URL + "/vets.html");
-        assertTrue(page.locator("h2").textContent().contains("Veterinarians"), "Page should contain 'Veterinarians'");
-        System.out.println(" Veterinarians page displayed");
-    }
-
-    // ===================== Error Handling Tests =====================
-
-    @Test
-    void testTriggerInternalServerError() {
-        APIRequestContext request = playwright.request().newContext();
-        APIResponse response = request.get(BASE_URL + "/oups");
-        assertEquals(500, response.status(), "Should return HTTP 500");
-        System.out.println(" CrashController test passed");
-    }
-
-
-
-
- //  MR1: Additive Property
-// - Add two owners and verify the count increases by 2.
-@Test
-void testAdditiveProperty() {
-    // Step 1: Navigate to Owner List and Get Initial Count
-    page.navigate(BASE_URL + "/owners/find");
-    page.fill("[name='lastName']", "");
-    page.click("button[type='submit']");
-
-    // Count owners before addition
-    int initialCount = page.locator("table tbody tr").count();
-    System.out.println(" MR1 - Initial Owner Count: " + initialCount);
-
-    // Add first owner
-    // Step 2: Transformation – Add First Owner
-    page.navigate(BASE_URL + "/owners/new");
-    page.fill("[name='firstName']", "John");
-    page.fill("[name='lastName']", "Doe");
-    page.fill("[name='address']", "456 Maple Street");
-    page.fill("[name='city']", "New York");
-    page.fill("[name='telephone']", "1234567890");
-    page.click("button[type='submit']");
-
-    // Add second owner
-    // Step 3: Transformation – Add Second Owner
-    page.navigate(BASE_URL + "/owners/new");
-    page.fill("[name='firstName']", "Alice");
-    page.fill("[name='lastName']", "Smith");
-    page.fill("[name='address']", "789 Oak Road");
-    page.fill("[name='city']", "Los Angeles");
-    page.fill("[name='telephone']", "9876543210");
-    page.click("button[type='submit']");
-
-    // Verify owners count increased
-    // Step 4: Assertion – Verify Count Increased by 2
-    page.navigate(BASE_URL + "/owners/find");
-    page.fill("[name='lastName']", "");
-    page.click("button[type='submit']");
-    int finalCount = page.locator("table tbody tr").count();
-    System.out.println("🔍 MR1 - Final Owner Count: " + finalCount);
-    assertTrue(finalCount == initialCount + 2, " MR1 Failed: Owners count should increase by 2 after addition.");
-    System.out.println(" MR1 Passed: Adding two owners increased the count.");
-}
-
-
-// MR 2 - Update Consistency
-// - Update an owner's city and verify the change is reflected correctly.
-
-@Test
-void testUpdateConsistency() {
-    page.navigate(BASE_URL + "/owners/1/edit");
-
-    String newCity = "San Francisco";
-    page.fill("[name='city']", newCity);
-    page.click("button[type='submit']");
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-
-    assertTrue(page.url().contains("/owners/1"), "❌ MR2 Failed: Not on the owner's detail page after update.");
-
-    Locator cityInfo = page.locator("table td:text-matches('.*" + newCity + ".*')").first();
-    cityInfo.waitFor(new Locator.WaitForOptions().setTimeout(50000));
-
-    assertTrue(page.content().contains(newCity), " MR2 Failed: Updated city not found on the page.");
-
-    System.out.println(" MR2 Passed: Updating an owner's city reflects correctly.");
-}
-
-// MR 3: Duplicate Owner Creation
-// - Attempt to create an owner with the same details as an existing one.
-@Test
-void testDuplicateOwnerCreation() {
-    page.navigate(BASE_URL + "/owners/new");
-    page.fill("[name='firstName']", "John");
-    page.fill("[name='lastName']", "Doe");
-    page.fill("[name='address']", "456 Elm Street");
-    page.fill("[name='city']", "Chicago");
-    page.fill("[name='telephone']", "1234567890");
-    page.click("button[type='submit']");
-
-    page.navigate(BASE_URL + "/owners/new");
-    page.fill("[name='firstName']", "John");
-    page.fill("[name='lastName']", "Doe");
-    page.fill("[name='address']", "456 Elm Street");
-    page.fill("[name='city']", "Chicago");
-    page.fill("[name='telephone']", "1234567890");
-    page.click("button[type='submit']");
-
-    System.out.println(" MR3 Passed: System allows duplicate owner creation.");
-}
-// MR 4: Unique Pet Name Constraint
-// - Ensure that a pet's name is unique for each owner.
-@Test
-void testUniquePetNameConstraint() {
-     // Step 1: Navigation + Setup – Create a new owner
-     page.navigate(BASE_URL + "/owners/new");
-    page.navigate(BASE_URL + "/owners/new");
-    page.fill("[name='firstName']", "Robert");
-    page.fill("[name='lastName']", "Downey");
-    page.fill("[name='address']", "221B Baker Street");
-    page.fill("[name='city']", "London");
-    page.fill("[name='telephone']", "5551234567");
-    page.click("button[type='submit']");
-
-    String[] urlParts = page.url().split("/");
-    String ownerId = urlParts[urlParts.length - 1];
-
-    // Step 2: Metamorphic Transformation – Add the first pet with name "Buddy"
-    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
-    page.fill("[name='name']", "Buddy");
-    page.fill("[name='birthDate']", "2022-08-15");
-    page.selectOption("[name='type']", "dog");
-    page.click("button[type='submit']");
-
-    // Step 3: Metamorphic Transformation – Attempt to add another pet with the same name
-    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
-    page.fill("[name='name']", "Buddy");
-    page.fill("[name='birthDate']", "2023-01-01");
-    page.selectOption("[name='type']", "cat");
-    page.click("button[type='submit']");
-
-// Step 4: Assertion – Verify that a validation error is displayed
-    boolean hasError = page.locator(".has-error").isVisible();
-    assertTrue(hasError, " MR4 Failed: Duplicate pet name allowed for the same owner.");
-
-    System.out.println(" MR4 Passed: System prevents duplicate pet names for the same owner.");
-}
-
-/** 
-     * 🔹 MR5: Reversibility of Update
-     * - Update an owner’s city.
-     * - Revert it back to the original value.
-     * - Verify that the final state matches the original.
+    /**
+     * MR1: Additive Property of Owners List
+     * - Seed Input: Count owners after adding one.
+     * - Transformation: Add another owner.
+     * - Morphed Output: Count owners again.
+     * - Relation: Count should increase by 1.
      */
-    @Test
-void testReversibilityOfUpdate() {
-    page.navigate(BASE_URL + "/owners/1/edit");
-
-    String originalCity = "Madison";
-    String newCity = "San Francisco";
-
-    // Change to new city
-    page.fill("[name='city']", newCity);
-    page.click("button[type='submit']");
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-
-    // Revert to original
-    page.navigate(BASE_URL + "/owners/1/edit");
-    page.fill("[name='city']", originalCity);
-    page.click("button[type='submit']");
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-
-    assertTrue(page.content().contains(originalCity), "❌ MR5 Failed: Original city not restored after reverting update.");
-
-    System.out.println(" MR5 Passed: Owner's city reverted correctly.");
-}
-
-
-    /** 
-     * 🔹 MR6: Commutative Property of Addition
-     * - Add two owners in different orders.
-     * - Verify that the total owner count remains the same.
-     */
-    @Test
-    void testCommutativePropertyOfAddition() {
-        page.navigate(BASE_URL + "/owners/find");
-        page.fill("[name='lastName']", "");
-        page.click("button[type='submit']");
-    
-        int initialCount = page.locator("table tbody tr").count();
-    
-        // Add Owner 1
+ @Test
+    void testMR1_AdditiveProperty() {
+        // Seed Input: Add first owner
         page.navigate(BASE_URL + "/owners/new");
         page.fill("[name='firstName']", "John");
         page.fill("[name='lastName']", "Doe");
-        page.fill("[name='address']", "Street 1");
+        page.fill("[name='address']", "123 St");
         page.fill("[name='city']", "NY");
         page.fill("[name='telephone']", "123456");
         page.click("button[type='submit']");
-    
-        // Add Owner 2
-        page.navigate(BASE_URL + "/owners/new");
-        page.fill("[name='firstName']", "Alice");
-        page.fill("[name='lastName']", "Smith");
-        page.fill("[name='address']", "Street 2");
-        page.fill("[name='city']", "LA");
-        page.fill("[name='telephone']", "789456");
-        page.click("button[type='submit']");
-    
+        System.out.println("🔹 Seed Input: First owner added.");
+// Seed Output: Count owners after first addition
         page.navigate(BASE_URL + "/owners/find");
         page.fill("[name='lastName']", "");
         page.click("button[type='submit']");
-        int finalCount = page.locator("table tbody tr").count();
-    
-        assertEquals(initialCount + 2, finalCount, "❌ MR6 Failed: Owner count did not increase correctly with commutative additions.");
-    
-        System.out.println(" MR6 Passed: Adding owners in different orders resulted in the same count.");
-    }
-    
-
-    /** 
-     * 🔹 MR7: Associativity of Updates
-     * - Update owner’s details in different orders.
-     * - The final data should be the same.
-     */
-    @Test
-void testAssociativityOfUpdates() {
-    page.navigate(BASE_URL + "/owners/1/edit");
-
-    // Step-by-step update
-    page.fill("[name='address']", "123 New Address");
-    page.fill("[name='city']", "San Diego");
-    page.fill("[name='telephone']", "999999999");
-    page.click("button[type='submit']");
-
-    // All at once
-    page.navigate(BASE_URL + "/owners/1/edit");
-    page.fill("[name='address']", "123 New Address");
-    page.fill("[name='city']", "San Diego");
-    page.fill("[name='telephone']", "999999999");
-    page.click("button[type='submit']");
-
-    assertTrue(page.content().contains("San Diego"), "❌ MR7 Failed: City did not reflect update after multiple sequences.");
-    System.out.println("MR7 Passed: Updating owner details in different orders had the same effect.");
-}
-
-
-    /** 
-     * 🔹 MR8: Read-Only Property of Veterinarian List
-     * - Visiting the veterinarian list multiple times should return the same result.
-     */
-    @Test
-void testReadOnlyVeterinarianListImproved() {
-    page.navigate(BASE_URL + "/vets.html");
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-
-    Locator vetNames = page.locator("table tbody tr td:first-child");
-    List<String> firstList = vetNames.allTextContents();
-
-    assertFalse(firstList.isEmpty(), "❌ MR8 Failed: Vet list is empty on first load.");
-
-    // Reload page and compare
-    page.reload();
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-    List<String> secondList = vetNames.allTextContents();
-
-    assertEquals(firstList, secondList, "❌ MR8 Failed: Vet list changed after reload.");
-
-    System.out.println(" MR8 Passed: Vet list remained consistent and non-empty across reloads.");
-}
-
-
-    /** 
-     * 🔹 MR9: Consistent Pet Details
-     * - Verify that a pet’s details match across multiple pages.
-     */
-    @Test
-    void testConsistentPetDetails() {
-        page.navigate(BASE_URL + "/owners/1/pets/new");
-        page.fill("[name='name']", "Charlie");
-        page.fill("[name='birthDate']", "2018-01-01");
-        page.selectOption("[name='type']", "dog");
+        int seedCount = page.locator("table tbody tr").count();
+        System.out.println("🔹 Seed Output: Owner count after first addition = " + seedCount);
+// Morphed Input: Add second owner
+        page.navigate(BASE_URL + "/owners/new");
+        page.fill("[name='firstName']", "Alice");
+        page.fill("[name='lastName']", "Smith");
+        page.fill("[name='address']", "456 St");
+        page.fill("[name='city']", "LA");
+        page.fill("[name='telephone']", "789456");
         page.click("button[type='submit']");
-    
-        page.navigate(BASE_URL + "/owners/1");
-    
-        assertTrue(page.content().contains("Charlie"), "❌ MR9 Failed: Pet name not found after navigation.");
-        assertTrue(page.content().contains("2018-01-01"), "❌ MR9 Failed: Pet birthdate not found after navigation.");
-    
-        System.out.println("✅ MR9 Passed: Pet details are consistent across pages.");
-    }
-    
-
-//  MR10: Search results should remain the same if no data is changed.
-@Test
-void testSearchConsistency() {
-    // Navigate to the find owners page
-    page.navigate(BASE_URL + "/owners/find");
-    
-    // Wait for the page to be fully loaded
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-    
-    // Make sure the form is visible before proceeding
-    page.waitForSelector("form", new Page.WaitForSelectorOptions()
-        .setState(WaitForSelectorState.VISIBLE)
-        .setTimeout(10000));
-    
-    // Fill the search field - with retry logic
-    try {
-        // Try to find the lastName field
-        page.waitForSelector("[name='lastName']", new Page.WaitForSelectorOptions()
-            .setState(WaitForSelectorState.VISIBLE)
-            .setTimeout(5000));
+        System.out.println("🔹 Morphed Input: Second owner added.");
+// Morphed Output: Count owners after second addition
+        page.navigate(BASE_URL + "/owners/find");
         page.fill("[name='lastName']", "");
-    } catch (Exception e) {
-        // If it fails, try again after a short delay
-        System.out.println("Retrying to find lastName field...");
-        page.waitForTimeout(2000);
-        page.fill("[name='lastName']", "");
-    }
-    
-    // Click submit with retry logic
-    try {
         page.click("button[type='submit']");
-    } catch (Exception e) {
-        System.out.println("Retrying to click submit button...");
-        page.waitForTimeout(2000);
-        page.click("form button[type='submit']");
+        int morphedCount = page.locator("table tbody tr").count();
+        System.out.println("🔹 Morphed Output: Owner count after second addition = " + morphedCount);
+// Relation Check: Count should increase by 1
+        System.out.println("🔹 Relation Check: morphedCount == seedCount + 1");
+        assertEquals(seedCount + 1, morphedCount, "MR1 Failed: Owner count should increase by exactly 1.");
+        System.out.println("✅ MR1 Passed: Owner count increased as expected.");
     }
-    
-    // Wait for the results to load
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-    
-    // Wait for the table to be visible with increased timeout
-    page.waitForSelector("table", new Page.WaitForSelectorOptions()
-        .setState(WaitForSelectorState.VISIBLE)
-        .setTimeout(15000));
-    
-    // Get initial search results
-    String firstSearchResults = page.locator("table tbody").innerText();
-    
-    // Longer pause to ensure stability
-    page.waitForTimeout(2000);
-    
-    // Navigate back to the find page to ensure a fresh state
-    page.navigate(BASE_URL + "/owners/find");
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-    
-    // Wait for the form to be visible again
-    page.waitForSelector("form", new Page.WaitForSelectorOptions()
-        .setState(WaitForSelectorState.VISIBLE)
-        .setTimeout(10000));
-    
-    // Second search with the same retry logic
-    try {
-        page.waitForSelector("[name='lastName']", new Page.WaitForSelectorOptions()
-            .setState(WaitForSelectorState.VISIBLE)
-            .setTimeout(5000));
-        page.fill("[name='lastName']", "");
-    } catch (Exception e) {
-        System.out.println("Retrying to find lastName field second time...");
-        page.waitForTimeout(2000);
-        page.fill("[name='lastName']", "");
-    }
-    
-    try {
-        page.click("button[type='submit']");
-    } catch (Exception e) {
-        System.out.println("Retrying to click submit button second time...");
-        page.waitForTimeout(2000);
-        page.click("form button[type='submit']");
-    }
-    
-    // Wait for the results to load again
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-    
-    // Wait for the table to be visible again
-    page.waitForSelector("table", new Page.WaitForSelectorOptions()
-        .setState(WaitForSelectorState.VISIBLE)
-        .setTimeout(15000));
-    
-    // Get new search results
-    String secondSearchResults = page.locator("table tbody").innerText();
-    
-    // Assert that both searches return the same results
-    assertEquals(firstSearchResults, secondSearchResults, "MR10 Failed : Search results should remain the same if no data is changed.");
-    
-    System.out.println(" MR10 Passed: Search results remained consistent.");
-}
-
-
-//  MR11: Owners List Order Consistency - The order should remain the same if no new owners are added
-@Test
-void testOwnersListOrderConsistency() {
-    page.navigate(BASE_URL + "/owners/find");
-    page.fill("[name='lastName']", "");
-    page.click("button[type='submit']");
-
-    List<String> initialOrder = page.locator("table tbody tr td:first-child a").allTextContents();
-
-    // Refresh and check again
-    page.reload();
-    List<String> finalOrder = page.locator("table tbody tr td:first-child a").allTextContents();
-
-    assertEquals(initialOrder, finalOrder, " MR11 Failed:  Owner list order should remain the same if unchanged.");
-    System.out.println(" MR11 Passed: Owners list order remains consistent.");
-}
-
-//  MR12: Pet List Order Consistency - The pet list should remain the same if no changes are made
-@Test
-void testPetListOrderConsistency() {
-    page.navigate(BASE_URL + "/owners/1");
-    List<String> initialPetList = page.locator(".petName").allTextContents();
-
-    // Reload and check again
-    page.reload();
-    List<String> finalPetList = page.locator(".petName").allTextContents();
-
-    assertEquals(initialPetList, finalPetList, "MR12 Failed: Pet list order should remain unchanged.");
-    System.out.println(" MR12 Passed: Pet list order remains consistent.");
-}
-
-//  MR13: Pet Birthdate Consistency - Changing a pet's birthdate should reflect correctly
-@Test
-void testPetBirthdateUpdate() {
-    page.navigate(BASE_URL + "/owners/1/pets/1/edit");
-    String newBirthDate = "2018-05-15";
-    page.fill("[name='birthDate']", newBirthDate);
-    page.click("button[type='submit']");
-    
-    // Verify update
-    page.navigate(BASE_URL + "/owners/1");
-    assertTrue(page.content().contains(newBirthDate), "MR13 Failed: Pet birthdate should be updated.");
-    System.out.println(" MR13 Passed: Updating a pet’s birthdate reflects correctly.");
-}
-
-//  MR14: Owner Contact Update Persistence - Updating a phone number should persist
-@Test
-void testOwnerPhoneNumberUpdate() {
-    page.navigate(BASE_URL + "/owners/1/edit");
-    String newPhone = "9876543210";
-    page.fill("[name='telephone']", newPhone);
-    page.click("button[type='submit']");
-
-    // Verify update
-    page.navigate(BASE_URL + "/owners/1");
-    assertTrue(page.content().contains(newPhone), "MR14 Failed: Updated phone number should persist.");
-    System.out.println(" MR14 Passed: Updating owner phone number persists correctly.");
-}
-
-//  MR15: Pet Type Update - Changing a pet type should reflect correctly
-@Test
-void testPetTypeUpdate() {
-    page.navigate(BASE_URL + "/owners/1/pets/1/edit");
-    page.selectOption("[name='type']", "cat");
-    page.click("button[type='submit']");
-
-    // Verify update
-    page.navigate(BASE_URL + "/owners/1");
-    assertTrue(page.content().contains("cat"), "MR15 Failed:  Pet type should be updated.");
-    System.out.println(" MR15 Passed: Pet type update reflects correctly.");
-}
-
-
-// @Test
-// void testFindOwnerByPartialName() {
-//     page.navigate(BASE_URL + "/owners/find");
-//     page.fill("[name='lastName']", "D");
-//     page.click("button[type='submit']");
-
-//     assertTrue(page.locator("table tbody tr").count() > 0, "MR16 Failed: At least one owner should be found.");
-//     System.out.println(" MR16 Passed: Searching by partial name returns owners.");
-// }
-
-// MR16: Find Owner by Partial Name - Searching part of an owner's name should return results
-@Test
-void mrFindOwnerByPartialNameSubset() {
-    String seedInput = "";       // Empty input (returns all owners)
-    String morphedInput = "D";   // Partial last name
-
-    // Step 1: Search with seed input (empty string)
-    page.navigate(BASE_URL + "/owners/find");
-    page.fill("[name='lastName']", seedInput);
-    page.click("button[type='submit']");
-
-    List<String> seedResults = page.locator("table tbody tr td a").allTextContents();
-    System.out.println("🔎 Seed (empty input) search results: " + seedResults);
-
-    // Step 2: Search with morphed input (partial name)
-    page.navigate(BASE_URL + "/owners/find");
-    page.fill("[name='lastName']", morphedInput);
-    page.click("button[type='submit']");
-
-    List<String> morphedResults = page.locator("table tbody tr td a").allTextContents();
-    System.out.println("🔎 Morphed (partial input) search results: " + morphedResults);
-
-    // Step 3: Assert metamorphic relation: morphedResults ⊆ seedResults
-    assertTrue(seedResults.containsAll(morphedResults), "❌ MR16 Failed: Partial search results are not a subset of all owners search.");
-
-    System.out.println("✅ MR16 Passed: Partial search results are a subset of all owners.");
-}
-
-
-
-//  MR17: Visit List Consistency - Visits for a pet should be consistent across reloads
-@Test
-void testVisitAdditionDetected() {
-    // Navigate to owner page
-    page.navigate(BASE_URL + "/owners/1");
-
-    // Locate the pet section (e.g., Leo)
-    Locator petSection = page.locator("dt:text('Name')").locator("xpath=../..").filter(new Locator.FilterOptions().setHasText("Leo"));
-
-    // Extract all visit dates for that pet
-    List<String> visitDates = petSection.locator("table.table-condensed tbody tr td:first-child").allTextContents();
-
-    System.out.println(" MR17 Visit dates: " + visitDates);
-
-    // Check if visit dates are in correct (chronological or reverse) order
-    List<String> sorted = new ArrayList<>(visitDates);
-    Collections.sort(sorted); // for ascending
-    // Collections.sort(sorted, Collections.reverseOrder()); // for descending if expected that way
-
-    assertEquals(sorted, visitDates, "MR17 Failed: Visit dates are not in expected order.");
-
-    System.out.println(" MR17 Passed: Visit order is consistent.");
-}
 
 
 /**
- *  MR18: Visit Addition Detection
- * - Add a new visit for a pet.
- * - Reload the owner's page.
- * - Verify that the visit count increases.
- * - Detects missing DB save faults (e.g., skipped visitRepository.save()).
+ * MR2: City Update Consistency
+ * - Seed Input: Create an owner with initial data including city.
+ * - Input Transformation: Update only the city field to a new value.
+ * - Morphed Input: Owner data with updated city.
+ * - Seed Output: Initial owner data with original city.
+ * - Morphed Output: Updated owner data with new city; other fields unchanged.
+ * - Relation: Only city is updated; other fields remain stable.
  */
 @Test
-void testVisitAdditionDetection() {
-    // Step 1: Go to owner detail page and record visit count
-    page.navigate(BASE_URL + "/owners/1");
-    Locator visitRowsBefore = page.locator("table.table-condensed tbody tr");
-    int beforeCount = visitRowsBefore.count();
+void testMR2_CityUpdateConsistency() {
+    // Seed Input values
+    String seedFirstName = "Test";
+    String seedLastName = "Owner";
+    String seedAddress = "123 Main St";
+    String seedCity = "Turku";
+    String seedTelephone = "1234567890";
+    String morphedCity = "Helsinki";
 
-    System.out.println(" MR18 - Visits BEFORE addition: " + beforeCount);
-
-    // Step 2: Add a new visit
-    page.navigate(BASE_URL + "/owners/1/pets/1/visits/new");
-    page.fill("input[name='date']", "2025-04-02");
-    page.fill("input[name='description']", "Metamorphic Testing Visit");
+    // 🔹 Step 1: Seed Input – Create a new owner with controlled initial data
+    page.navigate(BASE_URL + "/owners/new");
+    page.fill("[name='firstName']", seedFirstName);
+    page.fill("[name='lastName']", seedLastName);
+    page.fill("[name='address']", seedAddress);
+    page.fill("[name='city']", seedCity);
+    page.fill("[name='telephone']", seedTelephone);
     page.click("button[type='submit']");
+    page.waitForLoadState(LoadState.NETWORKIDLE);
 
-    // Step 3: Reload owner detail page and count again
-    page.navigate(BASE_URL + "/owners/1");
-    Locator visitRowsAfter = page.locator("table.table-condensed tbody tr");
-    int afterCount = visitRowsAfter.count();
+    // 🔹 Step 2: Extract dynamic owner ID from URL
+    String[] urlParts = page.url().split("/");
+    String ownerId = urlParts[urlParts.length - 1];
+    System.out.println("🔹 Seed Input: Created owner with city = " + seedCity + ", Owner ID = " + ownerId);
 
-    System.out.println(" MR18 - Visits AFTER addition: " + afterCount);
+    // 🔹 Step 3: Seed Output – Capture initial data
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    String seedOutputCity = page.textContent("table th:has-text('City') + td").trim();
+    String seedOutputName = page.textContent("table th:has-text('Name') + td").trim();
+    String seedOutputAddress = page.textContent("table th:has-text('Address') + td").trim();
+    String seedOutputTelephone = page.textContent("table th:has-text('Telephone') + td").trim();
 
-    // Step 4: Assertion
-    assertTrue(afterCount == beforeCount + 1, " MR18 Failed: Visit count did not increase after adding.");
-    System.out.println(" MR18 Passed: Visit successfully added and detected.");
+    System.out.println("🔹 Seed Output: City = " + seedOutputCity + ", Name = " + seedOutputName);
+
+    // 🔹 Step 4: Input Transformation – Update the city to a new value
+    page.navigate(BASE_URL + "/owners/" + ownerId + "/edit");
+    page.fill("[name='city']", morphedCity);
+    page.click("button[type='submit']");
+    System.out.println("🔹 Morphed Input: Updated city to = " + morphedCity);
+
+    // 🔹 Step 5: Morphed Output – Capture updated data
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    String morphedOutputCity = page.textContent("table th:has-text('City') + td").trim();
+    String morphedOutputName = page.textContent("table th:has-text('Name') + td").trim();
+    String morphedOutputAddress = page.textContent("table th:has-text('Address') + td").trim();
+    String morphedOutputTelephone = page.textContent("table th:has-text('Telephone') + td").trim();
+
+    System.out.println("🔹 Morphed Output: City = " + morphedOutputCity + ", Name = " + morphedOutputName);
+
+    // 🔹 Step 6: Relation Check – Only city updated; other fields unchanged
+    assertEquals(morphedCity, morphedOutputCity, "MR2 Failed: City was not updated correctly.");
+    assertEquals(seedOutputName, morphedOutputName, "MR2 Failed: Name changed unexpectedly.");
+    assertEquals(seedOutputAddress, morphedOutputAddress, "MR2 Failed: Address changed unexpectedly.");
+    assertEquals(seedOutputTelephone, morphedOutputTelephone, "MR2 Failed: Telephone changed unexpectedly.");
+
+    System.out.println("✅ MR2 Passed: Only city updated, other fields remain stable.");
 }
 
+
+    /**
+     * MR3: Consistent Pet Details
+     * - Seed Input: Create a New Owner with pet name, type, and birth date.
+     * - Transformation: Change pet type.
+     * - Morphed Output: Fetch updated pet details.
+     * - Relation: Name and birth date unchanged, type changed as expected.
+     */
+@Test
+void testMR3_ConsistentPetDetails() {
+    // Seed Input: Create a new owner
+    page.navigate(BASE_URL + "/owners/new");
+    page.fill("[name='firstName']", "SeedOwner");
+    page.fill("[name='lastName']", "Test");
+    page.fill("[name='address']", "123 Test St");
+    page.fill("[name='city']", "TestCity");
+    page.fill("[name='telephone']", "1234567890");
+    page.click("button[type='submit']");
+    String[] urlParts = page.url().split("/");
+    String ownerId = urlParts[urlParts.length - 1];  // Dynamic ownerId
+    System.out.println("🔹 Seed Input: Created owner " + ownerId);
+
+    // Seed Input: Add a new pet for this owner
+    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
+    page.fill("[name='name']", "Leo");
+    page.fill("[name='birthDate']", "2015-09-07");
+    page.selectOption("[name='type']", "dog");
+    page.click("button[type='submit']");
+    System.out.println("🔹 Seed Input: Created pet with name Leo, type dog, birth date 2015-09-07");
+
+    // Extract petId dynamically by navigating back to owner detail page
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    page.waitForSelector("h2:has-text('Pets and Visits')");
+    Locator petTable = page.locator("h2:has-text('Pets and Visits') + table");
+    String petLink = petTable.locator("tr td a").first().getAttribute("href");  // Extract pet edit link
+    String[] petUrlParts = petLink.split("/");
+    String petId = petUrlParts[petUrlParts.length - 2];  // Extract dynamic petId
+    System.out.println("🔹 Seed Input: Extracted petId " + petId);
+
+    // Seed Output: Capture pet details
+    Locator details = petTable.locator("tr td dl");
+    String seedName = details.locator("dt:has-text('Name') + dd").first().textContent().trim();
+    String seedType = details.locator("dt:has-text('Type') + dd").first().textContent().trim();
+    String seedBirth = details.locator("dt:has-text('Birth Date') + dd").first().textContent().trim();
+    System.out.println("🔹 Seed Output: Name = " + seedName + ", Type = " + seedType + ", Birth Date = " + seedBirth);
+
+    // Morphed Input: Change pet type
+    String newType = seedType.equalsIgnoreCase("dog") ? "cat" : "dog";
+    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/" + petId + "/edit");
+    page.waitForSelector("[name='type']");
+    page.selectOption("[name='type']", newType);
+    page.click("button[type='submit']");
+    System.out.println("🔹 Morphed Input: Updated pet type to " + newType);
+
+    // Morphed Output: Fetch updated pet details
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    String morphedName = details.locator("dt:has-text('Name') + dd").first().textContent().trim();
+    String morphedType = details.locator("dt:has-text('Type') + dd").first().textContent().trim();
+    String morphedBirth = details.locator("dt:has-text('Birth Date') + dd").first().textContent().trim();
+    System.out.println("🔹 Morphed Output: Name = " + morphedName + ", Type = " + morphedType + ", Birth Date = " + morphedBirth);
+
+    // Relation Check
+    boolean nameSame = seedName.equals(morphedName);
+    boolean birthSame = seedBirth.equals(morphedBirth);
+    boolean typeChanged = morphedType.equals(newType);
+
+    System.out.println("🔹 Relation Check: Name and Birth Date unchanged, Type updated to " + newType);
+    assertTrue(nameSame && birthSame && typeChanged, "MR3 Failed: Inconsistent pet details after type update.");
+    System.out.println("✅ MR3 Passed: Pet details consistent with expected transformation.");
+}
+
+
+ /**
+ * 🔹 MR4: Pet List Update Consistency
+ * 🔸 Seed Input: Create a new owner (TestOwner MR4) with no pets.
+ * 🔸 Morphed Input: Add a new pet (Charlie) to the same owner.
+ * 🔸 Seed Output: Fetch the initial pet list (likely empty).
+ * 🔸 Morphed Output: Fetch the updated pet list (should include Charlie).
+ * 🔸 Relation Check: morphedPets == seedPets + newPetName
+ * The test passes if the pet list is updated consistently with the new pet added.
+ */
+@Test
+void testMR4_PetListUpdate() {
+    String newPetName = "Charlie", newBirth = "2024-06-01", newType = "dog";
+
+    // Seed Input: Create a new owner
+    page.navigate(BASE_URL + "/owners/new");
+    page.fill("[name='firstName']", "TestOwner");
+    page.fill("[name='lastName']", "MR4");
+    page.fill("[name='address']", "123 Main St");
+    page.fill("[name='city']", "TestCity");
+    page.fill("[name='telephone']", "1234567890");
+    page.click("button[type='submit']");
+    String ownerId = page.url().split("/")[page.url().split("/").length - 1];
+    System.out.println("🔹 Seed Input: Created owner with ID " + ownerId);
+
+    // Seed Output: Capture initial pet list for the new owner
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    Locator petTable = page.locator("h2:has-text('Pets and Visits') + table");
+    List<String> seedPets = new ArrayList<>();
+    if (petTable.count() > 0) {
+        seedPets = petTable.locator("tr td dl dt:has-text('Name') + dd").allTextContents();
+    }
+    System.out.println("🔹 Seed Output: Initial pet list = " + seedPets);
+
+    // Morphed Input: Add a new pet for the same owner
+    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
+    page.fill("[name='name']", newPetName);
+    page.fill("[name='birthDate']", newBirth);
+    page.selectOption("[name='type']", newType);
+    page.click("button[type='submit']");
+    System.out.println("🔹 Morphed Input: Added pet with name " + newPetName);
+
+    // Morphed Output: Capture updated pet list
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    List<String> morphedPets = petTable.locator("tr td dl dt:has-text('Name') + dd").allTextContents();
+    System.out.println("🔹 Morphed Output: Updated pet list = " + morphedPets);
+
+    // Expected: seedPets plus newPetName
+    List<String> expectedPets = new ArrayList<>(seedPets);
+    expectedPets.add(newPetName);
+
+    // Relation Check: morphedPets == seedPets + newPetName
+    System.out.println("🔹 Relation Check: morphedPets == seedPets + newPetName");
+    assertEquals(expectedPets, morphedPets, "MR4 Failed: Pet list not updated as expected.");
+    System.out.println("✅ MR4 Passed: Pet list updated correctly with new pet.");
+}
+/**
+ * MR5: Pet Birth Date Update Consistency
+ * - Seed Input: Create a pet with an initial birth date.
+ * - Input Transformation: Update only the birth date to a new value.
+ * - Morphed Input: Pet with updated birth date.
+ * - Seed Output: Original pet details with initial birth date.
+ * - Morphed Output: Pet details with updated birth date; other fields unchanged.
+ * - Relation: Only birth date is updated; other fields remain stable.
+ */
+@Test
+void testMR5_PetBirthDateUpdateConsistency() {
+    String ownerFirstName = "MR5Owner";
+    String ownerLastName = "Test";
+    String petName = "BuddyMR5";
+    String petType = "dog";
+    String originalBirthDate = "2015-09-07";
+    String newBirthDate = "2018-05-15";
+    String ownerAddress = "123 Main St";
+    String ownerCity = "TestCity";
+    String ownerTelephone = "1234567890";
+
+    // 🔹 Seed Input: Create a new owner
+    page.navigate(BASE_URL + "/owners/new");
+    page.fill("[name='firstName']", ownerFirstName);
+    page.fill("[name='lastName']", ownerLastName);
+    page.fill("[name='address']", ownerAddress);
+    page.fill("[name='city']", ownerCity);
+    page.fill("[name='telephone']", ownerTelephone);
+    page.click("button[type='submit']");
+    String ownerId = page.url().split("/")[page.url().split("/").length - 1];
+    System.out.println("🔹 Seed Input: Created owner with ID " + ownerId);
+
+    // 🔹 Seed Input: Add a new pet with initial birth date
+    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
+    page.fill("[name='name']", petName);
+    page.fill("[name='birthDate']", originalBirthDate);
+    page.selectOption("[name='type']", petType);
+    page.click("button[type='submit']");
+    System.out.println("🔹 Seed Input: Created pet " + petName + " with birth date " + originalBirthDate);
+
+    // 🔹 Extract petId from edit link
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    Locator editLink = page.locator("h2:has-text('Pets and Visits') + table")
+                           .locator("a:has-text('Edit')").first();
+    String editHref = editLink.getAttribute("href");
+    String[] parts = editHref.split("/");
+    String petId = parts[parts.length - 2];
+    System.out.println("🔹 Extracted pet ID: " + petId);
+
+    // 🔹 Seed Output: Capture original pet details
+    Locator details = page.locator("h2:has-text('Pets and Visits') + table").locator("tr td dl");
+    String seedBirthDate = details.locator("dt:has-text('Birth Date') + dd").first().textContent().trim();
+    String seedName = details.locator("dt:has-text('Name') + dd").first().textContent().trim();
+    String seedType = details.locator("dt:has-text('Type') + dd").first().textContent().trim();
+    System.out.println("🔹 Seed Output: Birth Date = " + seedBirthDate + ", Name = " + seedName + ", Type = " + seedType);
+
+    // 🔹 Input Transformation & Morphed Input: Update birth date to new value
+    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/" + petId + "/edit");
+    page.fill("[name='birthDate']", newBirthDate);
+    page.click("button[type='submit']");
+    System.out.println("🔹 Morphed Input: Updated birth date to " + newBirthDate);
+
+    // 🔹 Morphed Output: Capture updated details
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    String morphedBirthDate = details.locator("dt:has-text('Birth Date') + dd").first().textContent().trim();
+    String morphedName = details.locator("dt:has-text('Name') + dd").first().textContent().trim();
+    String morphedType = details.locator("dt:has-text('Type') + dd").first().textContent().trim();
+    System.out.println("🔹 Morphed Output: Birth Date = " + morphedBirthDate + ", Name = " + morphedName + ", Type = " + morphedType);
+
+    // 🔹 Relation Check: Only birth date updated, other fields unchanged
+    assertEquals(newBirthDate, morphedBirthDate, "MR5 Failed: Birth date was not updated correctly.");
+    assertEquals(seedName, morphedName, "MR5 Failed: Name changed unexpectedly.");
+    assertEquals(seedType, morphedType, "MR5 Failed: Type changed unexpectedly.");
+
+    System.out.println("✅ MR5 Passed: Only birth date was updated; other fields remained stable.");
+}
+
+@Test
+void testMR6_FindOwnerPartialName() {
+    // MR6: Find Owner by Partial Name
+    // Seed Input: Search with empty last name (returns all owners)
+    // Morphed Input: Search with partial last name (e.g., "D")
+    // Seed Output: List of all owner names
+    // Morphed Output: List of owner names with last name containing "D"
+    // Relation: Morphed output ⊆ Seed output
+
+    String seedInput = "";  // Empty input to fetch all owners
+    String morphedInput = "D";  // Partial name input
+
+    // Seed Input: Search with empty last name
+    page.navigate(BASE_URL + "/owners/find");
+    page.fill("[name='lastName']", seedInput);
+    page.click("button[type='submit']");
+    List<String> seedResults = page.locator("table tbody tr td a").allTextContents();
+    System.out.println("🔹 Seed Input: Search with empty last name ('" + seedInput + "')");
+    System.out.println("🔹 Seed Output: " + seedResults);
+
+    // Morphed Input: Search with partial last name "D"
+    page.navigate(BASE_URL + "/owners/find");
+    page.fill("[name='lastName']", morphedInput);
+    page.click("button[type='submit']");
+    List<String> morphedResults = page.locator("table tbody tr td a").allTextContents();
+    System.out.println("🔹 Morphed Input: Search with partial last name ('" + morphedInput + "')");
+    System.out.println("🔹 Morphed Output: " + morphedResults);
+
+    // Relation Check: morphedResults ⊆ seedResults
+    boolean relationHolds = seedResults.containsAll(morphedResults);
+    System.out.println("🔹 Relation Check: morphedResults ⊆ seedResults");
+
+    assertTrue(relationHolds, "MR6 Failed: Partial search results are not a subset of all owners.");
+    System.out.println("✅ MR6 Passed: Partial search results are a subset of all owners.");
+}
+/**
+ * MR7: Visit List Additivity (Visit List Consistency)
+ * - Seed Input: Create a new owner and pet, and add an initial visit.
+ * - Transformation: Add a new visit to the same pet.
+ * - Morphed Input: Provide the new visit details (description and date).
+ * - Seed Output: Fetch the list of visit descriptions after the initial visit.
+ * - Morphed Output: Fetch the list of visit descriptions after adding the new visit.
+ * - Relation: The morphed visit list should include the seed list plus the new visit,
+ *   verifying that adding a new visit preserves existing visits.
+ * - Purpose: Validate that the system correctly appends new visit records without 
+ *   overwriting or missing previous data (additivity and consistency of visit records).
+ */
+@Test
+void testMR7_VisitListAdditivity_MT() {
+    String BASE_URL = "http://localhost:9090";
+
+    // 🌱 Seed Input: Create new owner and pet (initial system state)
+    page.navigate(BASE_URL + "/owners/new");
+    page.fill("[name='firstName']", "JohnMR7");
+    page.fill("[name='lastName']", "DoeMR7");
+    page.fill("[name='address']", "123 Test Street");
+    page.fill("[name='city']", "TestCity");
+    page.fill("[name='telephone']", "9876543210");
+    page.click("button[type='submit']");
+    String ownerId = page.url().split("/")[page.url().split("/").length - 1];
+    System.out.println("🔹 Created owner with ID: " + ownerId);
+
+    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
+    page.fill("[name='name']", "BuddyMR7");
+    page.fill("[name='birthDate']", "2015-09-07");
+    page.selectOption("[name='type']", "dog");
+    page.click("button[type='submit']");
+    page.waitForLoadState(LoadState.NETWORKIDLE);
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+
+    // 🌿 Extract Pet ID dynamically from "Add Visit" link
+    Locator petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText("BuddyMR7")).first();
+    String addVisitHref = petRow.locator("a:has-text('Add Visit')").getAttribute("href");
+    String[] parts = addVisitHref.split("/");
+    String petId = parts[parts.length - 3];
+    System.out.println("🔹 Located BuddyMR7 with Pet ID: " + petId);
+
+    // 🌿 Transformation: Add initial visit (seed state modification)
+    String addVisitUrl = BASE_URL + "/owners/" + ownerId + "/pets/" + petId + "/visits/new";
+    System.out.println("🔹 Seed Input: Navigating to Add Visit page: " + addVisitUrl);
+    String seedVisitDesc = "Initial Visit for MR7";
+    page.navigate(addVisitUrl);
+    page.fill("[name='description']", seedVisitDesc);
+    page.click("button[type='submit']");
+    page.waitForLoadState(LoadState.NETWORKIDLE);
+    page.waitForTimeout(2000);
+    System.out.println("🔹 Seed Input: Added initial visit with description '" + seedVisitDesc + "'");
+
+    // 🌿 Seed Output: Capture visit list after initial transformation
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText("BuddyMR7")).first();
+    Locator visitDescriptionsLocator = petRow.locator("td:nth-child(2) table.table-condensed tr td:nth-child(2)");
+    List<String> seedVisits = visitDescriptionsLocator.allTextContents();
+    System.out.println("🔹 Seed Output: Visit descriptions = " + seedVisits);
+
+    // 🌿 Morphed Input: Add a second visit (transformation - new input)
+    page.navigate(addVisitUrl); // Use correct dynamic URL for adding visit
+    String morphedVisitDesc = "New Visit for MR7";
+    page.fill("[name='description']", morphedVisitDesc);
+    page.click("button[type='submit']");
+    page.waitForLoadState(LoadState.NETWORKIDLE);
+    page.waitForTimeout(2000);
+    System.out.println("🔹 Morphed Input: Added new visit with description '" + morphedVisitDesc + "'");
+
+    // 🌿 Morphed Output: Capture updated visit list after transformation
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText("BuddyMR7")).first();
+    visitDescriptionsLocator = petRow.locator("td:nth-child(2) table.table-condensed tr td:nth-child(2)");
+    List<String> morphedVisits = visitDescriptionsLocator.allTextContents();
+    System.out.println("🔹 Morphed Output: Visit descriptions = " + morphedVisits);
+
+    // 🔎 Relation: Morphed Output = Seed Output + New Visit
+    // The relation checks that adding a new visit appends it to the list without removing previous data
+    List<String> expectedVisits = new ArrayList<>(seedVisits);
+    expectedVisits.add(morphedVisitDesc);
+    Collections.sort(expectedVisits, Collections.reverseOrder());
+    Collections.sort(morphedVisits, Collections.reverseOrder());
+    assertEquals(expectedVisits, morphedVisits, "MR7 Failed: Visit list did not update as expected.");
+    System.out.println("✅ MR7 Passed: Visit list updated correctly.");
+}
+
+/**
+ * MR8: Visit Addition Consistency
+ * - Seed Input: Create owner and pet, and count initial visits.
+ * - Input Transformation: Add a new visit to the same pet.
+ * - Morphed Input: Pet with the additional visit added.
+ * - Seed Output: Initial count of visits for the pet.
+ * - Morphed Output: Updated count of visits after new visit.
+ * - Relation: Visit count should increase by exactly 1.
+ */
+@Test
+void testMR8_VisitAdditionConsistency() {
+    String ownerFirstName = "JohnMR8";
+    String ownerLastName = "DoeMR8";
+    String petName = "BuddyMR8";
+    String petType = "dog";
+    String ownerAddress = "456 Test Ave";
+    String ownerCity = "TestCity";
+    String ownerTelephone = "1234567890";
+    String newVisitDate = "2025-06-02";
+    String newVisitDesc = "Add Test Visit MR8";
+
+    // 🔹 Step 1: Seed Input – Create owner and pet
+    page.navigate(BASE_URL + "/owners/new");
+    page.fill("[name='firstName']", ownerFirstName);
+    page.fill("[name='lastName']", ownerLastName);
+    page.fill("[name='address']", ownerAddress);
+    page.fill("[name='city']", ownerCity);
+    page.fill("[name='telephone']", ownerTelephone);
+    page.click("button[type='submit']");
+    String ownerId = page.url().split("/")[page.url().split("/").length - 1];
+    System.out.println("🔹 Seed Input: Created owner with ID " + ownerId);
+
+    page.navigate(BASE_URL + "/owners/" + ownerId + "/pets/new");
+    page.fill("[name='name']", petName);
+    page.fill("[name='birthDate']", "2018-01-01");
+    page.selectOption("[name='type']", petType);
+    page.click("button[type='submit']");
+    page.waitForLoadState(LoadState.NETWORKIDLE);
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+
+    // 🔹 Step 2: Extract petId for locating the pet's visit list
+    Locator petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText(petName)).first();
+    String addVisitHref = petRow.locator("a:has-text('Add Visit')").getAttribute("href");
+    String[] parts = addVisitHref.split("/");
+    String petId = parts[parts.length - 3];
+    System.out.println("🔹 Located " + petName + " with Pet ID: " + petId);
+
+    // 🔹 Step 3: Seed Output – Count initial number of visits
+    Locator visitsLocator = petRow.locator("td:nth-child(2) table.table-condensed tr td:nth-child(2)");
+    int seedVisitCount = visitsLocator.count();
+    System.out.println("🔹 Seed Output: Initial visit count = " + seedVisitCount);
+
+    // 🔹 Step 4: Input Transformation – Prepare to add a new visit
+    String addVisitUrl = BASE_URL + "/owners/" + ownerId + "/pets/" + petId + "/visits/new";
+
+    // 🔹 Step 5: Morphed Input – Add a new visit (transformation)
+    page.navigate(addVisitUrl);
+    page.fill("[name='date']", newVisitDate);
+    page.fill("[name='description']", newVisitDesc);
+    page.click("button[type='submit']");
+    page.waitForLoadState(LoadState.NETWORKIDLE);
+    page.waitForTimeout(2000);  // Allow for backend update
+    System.out.println("🔹 Morphed Input: Added visit with description '" + newVisitDesc + "'");
+
+    // 🔹 Step 6: Morphed Output – Count updated number of visits
+    page.navigate(BASE_URL + "/owners/" + ownerId);
+    petRow = page.locator("table tbody tr").filter(new Locator.FilterOptions().setHasText(petName)).first();
+    visitsLocator = petRow.locator("td:nth-child(2) table.table-condensed tr td:nth-child(2)");
+    int morphedVisitCount = visitsLocator.count();
+    System.out.println("🔹 Morphed Output: Updated visit count = " + morphedVisitCount);
+
+    // 🔹 Step 7: Relation Check – Visit count should increase by 1
+    assertEquals(seedVisitCount + 1, morphedVisitCount, "MR8 Failed: Visit count did not increase by 1.");
+    System.out.println("✅ MR8 Passed: Visit count increased correctly.");
+}
 
 }

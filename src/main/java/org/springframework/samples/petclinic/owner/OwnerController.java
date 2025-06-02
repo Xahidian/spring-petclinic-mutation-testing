@@ -73,9 +73,9 @@ class OwnerController {
 			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 		}
 		else {
-			this.owners.save(owner); // Fault #6 injected: owner not persisted
+			 this.owners.save(owner); // Fault #1 injected: owner not persisted
 			return "redirect:/owners/" + owner.getId();
-			//return "redirect:/owners"; // or even: return "redirect:/owners/9999";
+		
 		}
 	}
 
@@ -94,11 +94,13 @@ class OwnerController {
 		}
 
 		// find owners by last name
-		  Collection<Owner> results = this.owners.findByLastName(owner.getLastName());
-		// Collection<Owner> results = Collections.emptyList(); // 🔥 Fault #7 injected
-  // Fault #9: Injected — manually fetch and shuffle results
-   // Fault #9: List<Owner> results = new ArrayList<>(this.owners.findByLastName(owner.getLastName()));
-   // Fault #9:  Collections.shuffle(results); // <-- FAULT: random order returned
+		 Collection<Owner> results= this.owners.findByLastName(owner.getLastName()); //Modifed for fault injection
+	
+//  if (owner.getLastName().equals("")) {
+//         results = Collections.emptyList(); // FAULT 5: block empty search from returning any results
+//     } else {
+//         results = this.owners.findByLastName(owner.getLastName());
+//     }
 		if (results.isEmpty()) {
 			// no owners found
 			result.rejectValue("lastName", "notFound", "not found");
@@ -121,8 +123,7 @@ class OwnerController {
 		// Original
 Owner owner = this.owners.findById(ownerId);
 
-// Injected mutation Fault 1 
-  // Owner owner = null; // Simulating data not fetched from DB fault 1 
+
 
 		model.addAttribute(owner);
 		return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
@@ -135,8 +136,9 @@ Owner owner = this.owners.findById(ownerId);
 			return VIEWS_OWNER_CREATE_OR_UPDATE_FORM;
 		}
 		else {
-			owner.setId(ownerId);
-			this.owners.save(owner);
+			owner.setId(ownerId); //  Injecting fault 4
+			// owner.setAddress("FaultInjected: Unintended address change!"); 
+		this.owners.save(owner); 
 			return "redirect:/owners/{ownerId}";
 		}
 	}
@@ -150,7 +152,7 @@ Owner owner = this.owners.findById(ownerId);
 	public ModelAndView showOwner(@PathVariable("ownerId") int ownerId) {
 		ModelAndView mav = new ModelAndView("owners/ownerDetails");
 		Owner owner = this.owners.findById(ownerId);
-		//Owner owner = null; // ✅ Fault #5 injected
+		//Owner owner = null; 
 
 		for (Pet pet : owner.getPets()) {
 		pet.setVisitsInternal(visits.findByPetId(pet.getId()));
